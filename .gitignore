@@ -1,0 +1,44 @@
+# ── Build output ─────────────────────────────────────────────────
+dist/
+out/
+
+# ── Electron dev ─────────────────────────────────────────────────
+.webpack/
+
+# ── Node.js ──────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ── Environment ──────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── OS files ─────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editor / IDE ─────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── Logs ─────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ── electron-builder cache ───────────────────────────────────────
+# (system-level, not project-level, but listed for clarity)
+# %LOCALAPPDATA%/electron-builder/Cache
+
+# ── Temp / scratch ───────────────────────────────────────────────
+*.tmp
+*.temp

@@ -1,0 +1,25 @@
+{
+  "name": "compressly",
+  "productName": "Compressly",
+  "version": "1.0.0",
+  "description": "Modern, privacy-first image compression desktop app",
+  "main": "main.js",
+  "author": "Mistix",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --enable-logging",
+    "build": "electron-builder --win",
+    "build:dir": "electron-builder --win --dir",
+    "build:nosign": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false WIN_CSC_LINK='' electron-builder --win",
+    "clean:cache": "rimraf %LOCALAPPDATA%\\electron-builder\\Cache\\winCodeSign"
+  },
+  "dependencies": {
+    "chokidar": "^3.6.0",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  }
+}

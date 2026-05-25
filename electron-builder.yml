@@ -1,0 +1,36 @@
+appId: com.mistix.compressly
+productName: Compressly
+copyright: "Copyright © 2026 Mistix"
+
+directories:
+  output: dist
+  buildResources: build-resources
+
+files:
+  - main.js
+  - preload.js
+  - src/**/*
+  - renderer/**/*
+  - "!renderer/css/*.map"
+  - "!**/*.test.js"
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: ../assets/icon.ico
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  installerIcon: ../assets/icon.ico
+  uninstallerIcon: ../assets/icon.ico
+  installerHeaderIcon: ../assets/icon.ico
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Compressly
+
+extraResources:
+  - from: ../assets
+    to: assets
+    filter: ["*.ico", "*.png"]
