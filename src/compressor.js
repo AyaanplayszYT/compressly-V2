@@ -8,7 +8,7 @@ const fs    = require('fs');
 sharp.cache(false);
 
 const MAX_PIXELS = 200_000_000;
-const IMAGE_FORMATS = ['jpg','jpeg','png','webp','bmp','gif','tiff','tif','avif'];
+const IMAGE_FORMATS = ['jpg','jpeg','png','webp','bmp','gif','tiff','tif','avif','svg'];
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -58,6 +58,32 @@ async function compressImage(filePath, options = {}) {
   } = options;
 
   const originalSize = fs.statSync(filePath).size;
+  const srcExt = path.extname(filePath).toLowerCase();
+
+  // ── SVGO Vector Optimization ──────────────────────────
+  if (srcExt === '.svg') {
+    const { optimize } = require('svgo');
+    const svgData = fs.readFileSync(filePath, 'utf8');
+    const result = optimize(svgData, {
+      path: filePath,
+      multipass: true,
+      plugins: [
+        { name: 'preset-default', params: { overrides: { removeViewBox: false } } },
+      ],
+    });
+    
+    const outDir = outputDir || path.dirname(filePath);
+    const base = path.basename(filePath, '.svg');
+    const outPath = safeOutPath(outDir, base, 'svg');
+    
+    fs.writeFileSync(outPath, result.data);
+    const outputSize = fs.statSync(outPath).size;
+    const savings = originalSize - outputSize;
+    try { require('./history').add({ filename: path.basename(filePath), originalSize, outputSize, format: 'svg', quality, outputPath: outPath, sourcePath: filePath, timestamp: Date.now() }); } catch {}
+    return { filePath, outputPath: outPath, originalSize, outputSize, savings, savingsPct: originalSize > 0 ? Math.round(savings / originalSize * 1000) / 10 : 0, format: 'svg' };
+  }
+  // ──────────────────────────────────────────────────────
+
   const meta = await sharp(filePath).metadata();
   checkPixels(meta);
 
@@ -266,6 +292,44 @@ async function extractPalette(filePath, count = 8) {
     });
 }
 
+// ── Remove Background ──────────────────────────────────────────────────────
+
+async function removeBg(filePath, options = {}) {
+  const { removeBackground } = require('@imgly/background-removal-node');
+  const { app } = require('electron');
+  
+  const isPackaged = app ? app.isPackaged : false;
+  const basePath = isPackaged 
+    ? path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', '@imgly', 'background-removal-node', 'dist')
+    : path.join(__dirname, '..', 'node_modules', '@imgly', 'background-removal-node', 'dist');
+
+  const { model = 'medium', format = 'image/png' } = options;
+
+  const config = {
+    publicPath: `file:///${basePath.replace(/\\/g, '/')}/`,
+    model,
+    output: { format }
+  };
+
+  const fileUrl = `file:///${filePath.replace(/\\/g, '/')}`;
+  const blob = await removeBackground(fileUrl, config);
+  const buffer = Buffer.from(await blob.arrayBuffer());
+  
+  const outDir = path.dirname(filePath);
+  const base = path.basename(filePath, path.extname(filePath));
+  const ext = format === 'image/webp' ? 'webp' : 'png';
+  const outPath = safeOutPath(outDir, base, ext, 'nobg');
+  
+  fs.writeFileSync(outPath, buffer);
+  
+  return {
+    filePath,
+    outputPath: outPath,
+    originalSize: fs.statSync(filePath).size,
+    outputSize: buffer.length
+  };
+}
+
 module.exports = {
   compressImage,
   convertImage,
@@ -274,4 +338,5 @@ module.exports = {
   readExif,
   stripExif,
   extractPalette,
+  removeBg,
 };

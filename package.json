@@ -7,19 +7,35 @@
   "author": "Mistix",
   "license": "MIT",
   "scripts": {
-    "start": "electron .",
-    "dev": "electron . --enable-logging",
-    "build": "electron-builder --win",
-    "build:dir": "electron-builder --win --dir",
-    "build:nosign": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false WIN_CSC_LINK='' electron-builder --win",
+    "start": "npm run dev",
+    "dev:vite": "vite",
+    "dev:electron": "cross-env NODE_ENV=development electron . --enable-logging",
+    "dev": "start /b npm run dev:vite && npm run dev:electron",
+    "build:vite": "vite build",
+    "build": "npm run build:vite && electron-builder --win",
+    "build:dir": "npm run build:vite && electron-builder --win --dir",
+    "build:nosign": "npm run build:vite && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false WIN_CSC_LINK='' electron-builder --win",
     "clean:cache": "rimraf %LOCALAPPDATA%\\electron-builder\\Cache\\winCodeSign"
   },
   "dependencies": {
+    "@imgly/background-removal-node": "^1.4.5",
     "chokidar": "^3.6.0",
-    "sharp": "^0.33.5"
+    "fabric": "^7.4.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "sharp": "^0.33.5",
+    "svgo": "^4.0.1"
   },
   "devDependencies": {
+    "@types/fabric": "^5.3.11",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "cross-env": "^10.1.0",
     "electron": "^33.2.0",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "typescript": "^6.0.3",
+    "vite": "^6.4.2"
   }
 }

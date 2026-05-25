@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('api', {
   showInFolder: (p)   => ipcRenderer.invoke('shell:showInFolder', p),
   openPath:     (p)   => ipcRenderer.invoke('shell:openPath', p),
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
+  saveBase64:   (filePath, data) => ipcRenderer.invoke('shell:saveBase64', filePath, data),
 
   // ── Compression ──────────────────────────────────────────────────────────
   compressBatch: (paths, opts) => ipcRenderer.invoke('compress:batch', paths, opts),
@@ -39,6 +40,9 @@ contextBridge.exposeInMainWorld('api', {
 
   // ── Palette ──────────────────────────────────────────────────────────────
   paletteExtract: (filePath) => ipcRenderer.invoke('palette:extract', filePath),
+
+  // ── Remove Background ────────────────────────────────────────────────────
+  removeBg: (filePath, options) => ipcRenderer.invoke('removebg:process', filePath, options),
 
   // ── Meta clean ───────────────────────────────────────────────────────────
   metacleanBatch: (paths, dir) => ipcRenderer.invoke('metaclean:batch', paths, dir),

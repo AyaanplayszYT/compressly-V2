@@ -31,7 +31,7 @@ The same warm dark UI and sidebar-based navigation you know from v1, rebuilt ent
 | Image engine | Pillow | sharp (libvips) — 5–10× faster |
 | Installer size | ~16 MB | ~118 MB (includes Chromium) |
 | DLL issues on Windows | Occasional | None |
-| UI framework | Qt / PySide6 | HTML + CSS + JS |
+| UI framework | Qt / PySide6 | React + Vite + Fabric.js |
 | Background removal | Yes | Planned (v2.1) |
 
 ---
@@ -53,7 +53,8 @@ The same warm dark UI and sidebar-based navigation you know from v1, rebuilt ent
 - **Privacy-first** — 100% offline. No uploads, no accounts, no telemetry, no update checks
 - **Fast** — powered by [sharp](https://sharp.pixelplumbing.com/) (libvips), 5–10× faster than PIL for batch jobs
 - **No install needed** — ships as a portable ZIP or a one-click NSIS installer
-- **Modern UI** — warm dark theme, animated sidebar (52px ↔ 220px), smooth page transitions
+- **Modern UI** — warm dark theme, animated sidebar (60px ↔ 220px), smooth page transitions
+- **Studio (Canva Alternative)** — Full vector-based design studio powered by Fabric.js. Features 50+ elements, advanced typography presets, brush engines (spray/marker), rich templates (IG/YouTube), and SVG export.
 - **Multi-format** — reads JPG, PNG, WebP, BMP, GIF, TIFF; writes JPG, PNG, WebP, AVIF
 - **Batch compression** — drag-and-drop queue with real-time per-file progress and savings stats
 - **Format Converter** — bulk convert any format to WebP / JPEG / PNG
@@ -73,26 +74,6 @@ The same warm dark UI and sidebar-based navigation you know from v1, rebuilt ent
 
 ---
 
-## Compression Presets
-
-| Preset | Format | Quality | Max Size | Best For |
-|---|---|---|---|---|
-| **Ultra Quality** | WebP | 95 | Original | Portfolios, print previews |
-| **Balanced** ★ | WebP | 82 | Original | General use (recommended) |
-| **Web Optimised** | WebP | 72 | 1920px | Hero images, articles |
-| **Max Compression** | WebP | 55 | 1280px | Smallest possible files |
-| **Thumbnail** | WebP | 70 | 400px | Previews, avatars |
-| **Print Ready** | JPEG | 96 | Original | High-quality print output |
-| **Social Media** | JPEG | 85 | 2048px | Instagram, Twitter |
-| **Email** | JPEG | 70 | 1280px | Email attachments |
-
-All presets are one-click applied and fully adjustable.
-
----
-
-## Project Structure
-
-```
 compressly-V2/
 ├── renderer/
 │   ├── index.html          # Single-page app shell — all 17 pages
@@ -200,6 +181,9 @@ Compressly V2 follows the same hardened approach as V1:
 | Package | Version | Purpose |
 |---|---|---|
 | [electron](https://www.electronjs.org/) | 33 | Desktop shell + native OS APIs |
+| [react](https://react.dev/) | ^19 | Component-based UI rendering |
+| [vite](https://vitejs.dev/) | ^6 | Lightning fast frontend tooling |
+| [fabric](http://fabricjs.com/) | ^7 | HTML5 canvas engine for Studio |
 | [sharp](https://sharp.pixelplumbing.com/) | ^0.33 | High-performance image processing (libvips) |
 | [chokidar](https://github.com/paulmillr/chokidar) | ^3.6 | Cross-platform file system watcher |
 | [electron-builder](https://www.electron.build/) *(build only)* | ^25 | Packages the app into a Windows installer |

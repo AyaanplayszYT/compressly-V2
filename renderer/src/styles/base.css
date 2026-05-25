@@ -1,0 +1,142 @@
+/* ═══════════════════════════════════════════════════════════════
+   BASE — Design tokens, reset, typography, animations
+   Neo-Brutalism (Soft, Claude-like warm tones, scaled down)
+═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* ── Dark Theme Tokens (default) ───────────────────────────── */
+:root {
+  --bg:             #252220; /* Dark brown/grey */
+  --surface:        #302C2A;
+  --surface2:       #3E3936;
+  --border-color:   #0A0A0A; /* Pure black for stark borders */
+  --text:           #E8E3DF; /* Soft cream text */
+  --text2:          #B8B0AA;
+  --text3:          #857E79;
+  
+  --accent:         #D26A4A; /* Dark Orange / Terracotta */
+  --primary:        #D4A24C; /* Mustard / Ochre */
+  --green:          #8A9A83; /* Sage */
+  --red:            #C25955;
+  --yellow:         #D4A24C;
+  
+  --toast-bg:       #302C2A;
+  --sidebar-bg:     #252220;
+  --titlebar-bg:    #252220;
+  
+  --input-bg:       #252220;
+  --row-bg:         #302C2A;
+  --row-hover:      #3E3936;
+  --btn-bg:         #3E3936;
+
+  --border-width:   2px;
+  --shadow:         3px 3px 0px 0px var(--border-color);
+  --shadow-hover:   5px 5px 0px 0px var(--border-color);
+  --shadow-active:  0px 0px 0px 0px var(--border-color);
+
+  --radius:    12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --font:      'Space Grotesk', system-ui, sans-serif;
+  --transition:      150ms ease;
+  --transition-slow: 250ms ease;
+}
+
+/* ── Light Theme Tokens ────────────────────────────────────── */
+:root[data-theme="light"] {
+  --bg:             #F5EFE9; /* Soft cream */
+  --surface:        #FFFDFB; /* Warm white */
+  --surface2:       #EAE2DA;
+  --border-color:   #252220; /* Dark brown lines */
+  --text:           #252220;
+  --text2:          #5E5854;
+  --text3:          #8A837E;
+  
+  --accent:         #C65738; /* Dark orange */
+  --primary:        #C69338; /* Mustard brown */
+  --green:          #6A7F63;
+  --red:            #A8423E;
+  --yellow:         #C69338;
+  
+  --toast-bg:       #FFFDFB;
+  --sidebar-bg:     #F5EFE9;
+  --titlebar-bg:    #F5EFE9;
+  
+  --input-bg:       #FFFDFB;
+  --row-bg:         #FFFDFB;
+  --row-hover:      #F5EFE9;
+  --btn-bg:         #EAE2DA;
+}
+
+/* ── Reset ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px; /* Scaled down from 14px */
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+}
+
+#root { height: 100%; }
+
+/* ── Scrollbars ─────────────────────────────────────────────── */
+::-webkit-scrollbar            { width: 8px; height: 8px; border-left: var(--border-width) solid var(--border-color); }
+::-webkit-scrollbar-track      { background: var(--bg); }
+::-webkit-scrollbar-thumb      { background: var(--text2); border: 1px solid var(--border-color); }
+::-webkit-scrollbar-thumb:hover{ background: var(--primary); }
+::-webkit-scrollbar-corner     { background: var(--bg); border-left: var(--border-width) solid var(--border-color); border-top: var(--border-width) solid var(--border-color); }
+
+input, textarea { user-select: text; }
+
+/* ── Typography ─────────────────────────────────────────────── */
+.h1      { font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; line-height: 1.1; text-transform: uppercase; }
+.h2      { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.2px; text-transform: uppercase; }
+.h3      { font-size: 14px; font-weight: 700; color: var(--text); text-transform: uppercase; }
+h3       { font-size: 14px; font-weight: 700; color: var(--text); margin: 0; text-transform: uppercase; }
+.eyebrow {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1px; color: #FFFDFB;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  background: var(--border-color);
+  display: inline-block;
+  padding: 2px 6px;
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: 2px 2px 0px 0px var(--accent);
+}
+.muted   { color: var(--text2); font-size: 13px; font-weight: 500; }
+.dim     { color: var(--text3); font-size: 12px; }
+.accent  { color: var(--accent); }
+.success { color: var(--green); }
+.danger  { color: var(--red); }
+
+/* ── Utility ────────────────────────────────────────────────── */
+.flex         { display: flex; }
+.flex-col     { display: flex; flex-direction: column; }
+.items-center { align-items: center; }
+.gap-4   { gap: 4px; }
+.gap-8   { gap: 8px; }
+.gap-12  { gap: 12px; }
+.gap-16  { gap: 16px; }
+.gap-20  { gap: 20px; }
+.gap-24  { gap: 24px; }
+.flex-1  { flex: 1; }
+.text-center { text-align: center; }
+.hidden  { display: none !important; }
+
+/* ── Animations ────────────────────────────────────────────── */
+@keyframes spin     { to { transform: rotate(360deg); } }
+@keyframes slideUp  { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pageIn   { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes dropPulse {
+  0%,100% { background: var(--bg); }
+  50%     { background: var(--accent); }
+}

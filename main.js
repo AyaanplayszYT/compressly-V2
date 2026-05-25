@@ -1,10 +1,11 @@
 'use strict';
 
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, Tray, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
 let mainWindow = null;
+let tray = null;
 const isDev = process.argv.includes('--enable-logging');
 
 // ── Lazy-load modules after app is ready ───────────────────────────────────
@@ -18,11 +19,18 @@ function loadModules() {
 
 // ── Window ─────────────────────────────────────────────────────────────────
 
+function getIconPath() {
+  // In dev: assets/icon.ico is relative to project root (__dirname)
+  // In packaged: it's copied to resources/assets/icon.ico
+  const devPath = path.join(__dirname, 'assets', 'icon.ico');
+  const packedPath = path.join(process.resourcesPath, 'assets', 'icon.ico');
+  if (app.isPackaged && fs.existsSync(packedPath)) return packedPath;
+  if (fs.existsSync(devPath)) return devPath;
+  return undefined;
+}
+
 function createWindow() {
-  // Resolve icon relative to project root (works both dev and packed)
-  const iconPath = app.isPackaged
-    ? path.join(process.resourcesPath, 'assets', 'icon.ico')
-    : path.join(__dirname, '..', 'assets', 'icon.ico');
+  const iconPath = getIconPath();
 
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -36,13 +44,17 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
-      webSecurity: true,
+      webSecurity: false,
     },
     show: false,
-    icon: fs.existsSync(iconPath) ? iconPath : undefined,
+    icon: iconPath,
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  if (isDev) {
+    mainWindow.loadURL('http://localhost:5173');
+  } else {
+    mainWindow.loadFile(path.join(__dirname, 'renderer', 'dist', 'index.html'));
+  }
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
@@ -53,15 +65,44 @@ function createWindow() {
   mainWindow.on('unmaximize', () => mainWindow.webContents.send('win:state', 'normal'));
   mainWindow.on('minimize',   () => mainWindow.webContents.send('win:state', 'minimized'));
   mainWindow.on('restore',    () => mainWindow.webContents.send('win:state', 'normal'));
+
+  // Minimize to tray instead of closing (only when tray is active)
+  mainWindow.on('close', (event) => {
+    if (!app.isQuiting && tray) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+  });
+}
+
+function createTray() {
+  const iconPath = getIconPath();
+  if (!iconPath) return; // no icon → skip tray
+
+  try {
+    tray = new Tray(iconPath);
+    const contextMenu = Menu.buildFromTemplate([
+      { label: 'Open Compressly', click: () => { if (mainWindow) mainWindow.show(); } },
+      { type: 'separator' },
+      { label: 'Quit', click: () => { app.isQuiting = true; app.quit(); } }
+    ]);
+    tray.setToolTip('Compressly — Image Tools');
+    tray.setContextMenu(contextMenu);
+    tray.on('click', () => { if (mainWindow) mainWindow.show(); });
+  } catch (err) {
+    console.error('Failed to create tray:', err.message);
+  }
 }
 
 app.whenReady().then(() => {
   loadModules();
   createWindow();
+  createTray();
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  // With tray mode, windows can all be hidden but app stays alive
+  if (!tray && process.platform !== 'darwin') app.quit();
 });
 
 app.on('activate', () => {
@@ -107,6 +148,16 @@ ipcMain.handle('dialog:saveFile', async (_e, options = {}) => {
 ipcMain.handle('shell:showInFolder', (_e, filePath) => shell.showItemInFolder(filePath));
 ipcMain.handle('shell:openPath',     (_e, filePath) => shell.openPath(filePath));
 ipcMain.handle('shell:openExternal', (_e, url)      => shell.openExternal(url));
+
+ipcMain.handle('shell:saveBase64', async (_e, filePath, base64Data) => {
+  try {
+    const buffer = Buffer.from(base64Data, 'base64');
+    fs.writeFileSync(filePath, buffer);
+    return { success: true, filePath };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
 
 // ── Compression ────────────────────────────────────────────────────────────
 
@@ -191,6 +242,17 @@ ipcMain.handle('exif:strip', async (_e, filePaths, outputDir) => {
 
 ipcMain.handle('palette:extract', async (_e, filePath) =>
   compressor.extractPalette(filePath));
+
+// ── Remove Background ──────────────────────────────────────────────────────
+
+ipcMain.handle('removebg:process', async (_e, filePath, options) => {
+  try {
+    const result = await compressor.removeBg(filePath, options);
+    return { success: true, ...result };
+  } catch (err) {
+    return { success: false, filePath, error: err.message };
+  }
+});
 
 // ── Meta clean ─────────────────────────────────────────────────────────────
 

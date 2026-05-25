@@ -23,6 +23,34 @@ window.DashboardPage = (() => {
   let _running    = false;
   let _outputDir  = null;
 
+  // Compare Modal elements
+  const compModal = document.getElementById('compare-modal');
+  const compImgOrig = document.getElementById('compare-img-original');
+  const compImgComp = document.getElementById('compare-img-compressed');
+  const compClipper = document.getElementById('compare-clipper');
+  const compSlider = document.getElementById('compare-slider');
+  const compSizeOrig = document.getElementById('compare-size-original');
+  const compSizeComp = document.getElementById('compare-size-compressed');
+  
+  document.getElementById('compare-close-btn').addEventListener('click', () => {
+    compModal.style.display = 'none';
+  });
+
+  compSlider.addEventListener('input', (e) => {
+    compClipper.style.width = e.target.value + '%';
+  });
+
+  function openCompareModal(origPath, compPath, origSize, compSize) {
+    const t = Date.now();
+    compImgOrig.src = 'file:///' + origPath.replace(/\\/g, '/') + '?t=' + t;
+    compImgComp.src = 'file:///' + compPath.replace(/\\/g, '/') + '?t=' + t;
+    compSizeOrig.textContent = Utils.fmtBytes(origSize);
+    compSizeComp.textContent = Utils.fmtBytes(compSize);
+    compSlider.value = 50;
+    compClipper.style.width = '50%';
+    compModal.style.display = 'flex';
+  }
+
   // Quality label
   qualityEl.addEventListener('input', () => { qualValEl.textContent = qualityEl.value; });
 
@@ -68,6 +96,13 @@ window.DashboardPage = (() => {
     if (result) {
       Utils.updateQueueRow(index, 'Done', `→ ${Utils.fmtBytes(result.outputSize)} (−${Utils.fmtPct(result.savingsPct)})`);
       _results[index] = { success: true, ...result };
+      const row = document.getElementById(`qrow-${index}`);
+      if (row) {
+        row.style.cursor = 'pointer';
+        row.title = 'Click to compare Original vs Compressed';
+        // Add a subtle hover effect hint
+        row.style.background = 'rgba(255,255,255,0.03)';
+      }
     } else {
       Utils.updateQueueRow(index, 'Error', error || '');
       _results[index] = { success: false, filePath, error };
@@ -116,11 +151,24 @@ window.DashboardPage = (() => {
           <button class="btn btn-icon btn-ghost" title="Remove" data-idx="${i}">&#x2715;</button>
         </div>
       `;
-      row.querySelector('button').addEventListener('click', () => {
+      row.querySelector('button').addEventListener('click', (e) => {
+        e.stopPropagation();
         _files.splice(i, 1);
+        _results.splice(i, 1);
         renderQueue();
         if (!_files.length) statsEl.style.display = 'none';
       });
+      row.addEventListener('click', () => {
+        const res = _results[i];
+        if (res && res.success && res.outputPath) {
+          openCompareModal(res.filePath, res.outputPath, res.originalSize, res.outputSize);
+        }
+      });
+      // Add visual hint for clickable rows
+      if (_results[i] && _results[i].success) {
+        row.style.cursor = 'pointer';
+        row.title = 'Click to compare Original vs Compressed';
+      }
       queueEl.appendChild(row);
     });
   }

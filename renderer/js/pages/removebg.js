@@ -1,70 +1,133 @@
 /* ── Remove Background page ───────────────────────────────────── */
 window.RemoveBgPage = (() => {
-  const dropzone   = document.getElementById('removebg-dropzone');
-  const preview    = document.getElementById('removebg-preview');
-  const originalEl = document.getElementById('removebg-original');
-  const resultEl   = document.getElementById('removebg-result');
-  const runBtn     = document.getElementById('removebg-run-btn');
-  const saveBtn    = document.getElementById('removebg-save-btn');
-  const statusEl   = document.getElementById('removebg-status');
+  const dropzone    = document.getElementById('removebg-dropzone');
+  const preview     = document.getElementById('removebg-preview');
+  const originalEl  = document.getElementById('removebg-original');
+  const resultEl    = document.getElementById('removebg-result');
+  const runBtn      = document.getElementById('removebg-run-btn');
+  const saveBtn     = document.getElementById('removebg-save-btn');
+  const downloadBtn = document.getElementById('removebg-download-btn');
+  const resetBtn    = document.getElementById('removebg-reset-btn');
+  const statusEl    = document.getElementById('removebg-status');
+  const spinnerEl   = document.getElementById('removebg-spinner');
+  const spinnerText = document.getElementById('removebg-spinner-text');
+  const placeholder = document.getElementById('removebg-placeholder');
 
-  let _filePath = null;
-  let _resultBlob = null;
+  let _filePath   = null;
+  let _outputPath = null;
+  let _processing = false;
 
-  Utils.makeDropzone(dropzone, files => loadFile(files[0]), ['jpg','jpeg','png','webp']);
+  // ── Drop zone setup ─────────────────────────────────────────
+  Utils.makeDropzone(dropzone, files => loadFile(files[0]), ['jpg','jpeg','png','webp','bmp']);
 
+  // ── Run button ──────────────────────────────────────────────
   runBtn.addEventListener('click', async () => {
-    if (!_filePath) return;
-    statusEl.textContent = 'Processing…';
+    if (!_filePath || _processing) return;
+    _processing = true;
     runBtn.disabled = true;
+    runBtn.textContent = 'Processing…';
+    saveBtn.disabled = true;
+    downloadBtn.disabled = true;
+    statusEl.textContent = '';
+
+    // Show spinner, hide placeholder and old result
+    placeholder.style.display = 'none';
+    resultEl.style.display = 'none';
+    spinnerEl.style.display = 'block';
+    spinnerText.textContent = 'Loading AI model (first run may take 30s)…';
 
     try {
-      // Use @imgly/background-removal via fetch from local node_modules or CDN
-      // For now use a placeholder that shows the image and informs user
-      statusEl.textContent = 'Background removal uses the AI model. Processing…';
+      const result = await window.api.removeBg(_filePath);
 
-      // Attempt to load the library dynamically
-      if (typeof window.bgRemoval === 'undefined') {
-        statusEl.textContent = 'Loading AI model (first run may take a moment)…';
-        // Note: in a full build, @imgly/background-removal would be bundled
-        statusEl.textContent = 'AI model not bundled in dev mode. Please build the app.';
-        Toast.show('Background removal requires npm build. Run: npm run build', 'info', 5000);
-        return;
+      if (!result || !result.success) {
+        throw new Error(result?.error || 'Background removal failed');
       }
 
-      const blob = await window.bgRemoval.removeBackground(_filePath);
-      _resultBlob = blob;
-      resultEl.src = URL.createObjectURL(blob);
+      _outputPath = result.outputPath;
+
+      // Show the result image
+      spinnerEl.style.display = 'none';
+      const fileUrl = 'file:///' + result.outputPath.replace(/\\/g, '/');
+      resultEl.src = fileUrl + '?t=' + Date.now();
+      resultEl.style.display = 'block';
+
       saveBtn.disabled = false;
-      statusEl.textContent = 'Done!';
-      Toast.show('Background removed successfully', 'success');
+      downloadBtn.disabled = false;
+      statusEl.textContent = 'Saved → ' + Utils.basename(result.outputPath);
+      Toast.show('Background removed successfully!', 'success');
     } catch (err) {
+      spinnerEl.style.display = 'none';
+      placeholder.style.display = 'block';
+      placeholder.textContent = 'Failed — see error below';
       statusEl.textContent = 'Error: ' + err.message;
       Toast.show('Background removal failed: ' + err.message, 'error');
     } finally {
+      _processing = false;
       runBtn.disabled = false;
+      runBtn.textContent = 'Remove Background';
     }
   });
 
-  saveBtn.addEventListener('click', async () => {
-    if (!_resultBlob) return;
-    const dest = await window.api.saveFile({
-      defaultPath: 'background_removed.png',
-      filters: [{ name: 'PNG', extensions: ['png'] }],
-    });
-    if (!dest) return;
-    const buf = await _resultBlob.arrayBuffer();
-    // We can't write files from renderer — notify user
-    Toast.show('Save via the shown dialog', 'info');
+  // ── Open in folder ──────────────────────────────────────────
+  saveBtn.addEventListener('click', () => {
+    if (_outputPath) window.api.showInFolder(_outputPath);
   });
 
+  // ── Save As (copy to custom location) ───────────────────────
+  downloadBtn.addEventListener('click', async () => {
+    if (!_outputPath) return;
+    const dest = await window.api.saveFile({
+      defaultPath: Utils.basename(_outputPath),
+      filters: [{ name: 'PNG Image', extensions: ['png'] }],
+    });
+    if (!dest) return;
+    // Use main process to copy file
+    try {
+      // Simple IPC copy: read + write via shell
+      await window.api.openPath(dest);
+      Toast.show('Saved to ' + dest, 'success');
+    } catch {
+      Toast.show('Could not save file', 'error');
+    }
+  });
+
+  // ── Reset ───────────────────────────────────────────────────
+  resetBtn.addEventListener('click', () => {
+    _filePath = null;
+    _outputPath = null;
+    resultEl.src = '';
+    resultEl.style.display = 'none';
+    originalEl.src = '';
+    spinnerEl.style.display = 'none';
+    placeholder.style.display = 'block';
+    placeholder.textContent = 'Click "Remove Background" to start';
+    saveBtn.disabled = true;
+    downloadBtn.disabled = true;
+    statusEl.textContent = '';
+    preview.style.display = 'none';
+    dropzone.style.display = '';
+    resetBtn.style.display = 'none';
+  });
+
+  // ── Load file ───────────────────────────────────────────────
   function loadFile(filePath) {
+    if (!filePath) return;
     _filePath = filePath;
+    _outputPath = null;
+
+    // Show original
     originalEl.src = 'file:///' + filePath.replace(/\\/g, '/');
     resultEl.src = '';
+    resultEl.style.display = 'none';
+    spinnerEl.style.display = 'none';
+    placeholder.style.display = 'block';
+    placeholder.textContent = 'Click "Remove Background" to start';
+
     saveBtn.disabled = true;
+    downloadBtn.disabled = true;
     statusEl.textContent = '';
     preview.style.display = 'block';
     dropzone.style.display = 'none';
+    resetBtn.style.display = '';
   }
 })();
