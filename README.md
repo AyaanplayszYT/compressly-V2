@@ -36,18 +36,6 @@ The same warm dark UI and sidebar-based navigation you know from v1, rebuilt ent
 
 ---
 
-## Screenshots
-
-<div align="center">
-  <img src="assets/compressly-darkmode.png" alt="Compressly V2 Dark Mode" width="700" />
-  <br/><em>Dark mode — warm dark theme with animated sidebar navigation</em>
-  <br/><br/>
-  <img src="assets/compressly-lightmode.png" alt="Compressly V2 Light Mode" width="700" />
-  <br/><em>Light mode — clean, minimal interface</em>
-</div>
-
----
-
 ## Features
 
 - **Privacy-first** — 100% offline. No uploads, no accounts, no telemetry, no update checks
@@ -71,35 +59,6 @@ The same warm dark UI and sidebar-based navigation you know from v1, rebuilt ent
 - **Custom Output Naming** — template-based filenames with `{name}`, `{date}`, `{width}`, `{format}` tokens
 - **Dark / Light Theme** — instant switch, preference saved across sessions
 - **Hardened** — atomic writes, decompression-bomb cap (200 MP), no `shell: true`, no `eval`
-
----
-
-compressly-V2/
-├── renderer/
-│   ├── index.html          # Single-page app shell — all 17 pages
-│   ├── css/
-│   │   ├── base.css        # Design tokens, typography, dark/light themes
-│   │   ├── layout.css      # Titlebar, sidebar, page container
-│   │   └── components.css  # Buttons, inputs, dropzone, queue rows, toasts
-│   └── js/
-│       ├── app.js          # Page router + theme management
-│       ├── sidebar.js      # Animated sidebar (52px ↔ 220px)
-│       ├── titlebar.js     # Custom titlebar + window controls
-│       ├── toast.js        # Toast notification system
-│       ├── utils.js        # Shared utilities (formatBytes, dropzone, queue)
-│       └── pages/          # One JS file per page (16 pages)
-├── src/
-│   ├── compressor.js       # sharp engine — compress/convert/resize/watermark/EXIF/palette
-│   ├── history.js          # JSON history store (~/.config/Compressly/history.json)
-│   └── watcher.js          # Chokidar folder watcher
-├── assets/                 # App icons and logo images
-├── dist/                   # Build output (gitignored)
-├── main.js                 # Electron main process + all IPC handlers
-├── preload.js              # Secure contextBridge (window.api)
-├── electron-builder.yml    # Packaging config (NSIS installer)
-├── package.json
-└── RELEASE_README.md       # Release notes / GitHub release description
-```
 
 ---
 
