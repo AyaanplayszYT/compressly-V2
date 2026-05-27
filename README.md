@@ -36,18 +36,6 @@ The same warm dark UI and sidebar-based navigation you know from v1, rebuilt ent
 
 ---
 
-## Screenshots
-
-<div align="center">
-  <img src="assets/compressly-darkmode.png" alt="Compressly V2 Dark Mode" width="700" />
-  <br/><em>Dark mode — warm dark theme with animated sidebar navigation</em>
-  <br/><br/>
-  <img src="assets/compressly-lightmode.png" alt="Compressly V2 Light Mode" width="700" />
-  <br/><em>Light mode — clean, minimal interface</em>
-</div>
-
----
-
 ## Features
 
 - **Privacy-first** — 100% offline. No uploads, no accounts, no telemetry, no update checks
