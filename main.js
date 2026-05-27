@@ -8,6 +8,9 @@ let mainWindow = null;
 let tray = null;
 const isDev = process.argv.includes('--enable-logging');
 
+// Batch cancel flag
+let _cancelRequested = false;
+
 // ── Lazy-load modules after app is ready ───────────────────────────────────
 let compressor, historyStore, folderWatcher;
 
@@ -162,8 +165,10 @@ ipcMain.handle('shell:saveBase64', async (_e, filePath, base64Data) => {
 // ── Compression ────────────────────────────────────────────────────────────
 
 ipcMain.handle('compress:batch', async (_e, filePaths, options) => {
+  _cancelRequested = false;
   const results = [];
   for (let i = 0; i < filePaths.length; i++) {
+    if (_cancelRequested) break;
     try {
       const result = await compressor.compressImage(filePaths[i], options);
       results.push({ success: true, ...result });
@@ -178,8 +183,11 @@ ipcMain.handle('compress:batch', async (_e, filePaths, options) => {
       });
     }
   }
+  _cancelRequested = false;
   return results;
 });
+
+ipcMain.handle('compress:cancel', () => { _cancelRequested = true; return true; });
 
 // ── Convert ────────────────────────────────────────────────────────────────
 
@@ -238,10 +246,50 @@ ipcMain.handle('exif:strip', async (_e, filePaths, outputDir) => {
   return results;
 });
 
+// ── Crop ───────────────────────────────────────────────────────────────────
+
+ipcMain.handle('crop:image', async (_e, filePath, options) => {
+  try {
+    const result = await compressor.cropImage(filePath, options);
+    return { success: true, ...result };
+  } catch (err) {
+    return { success: false, filePath, error: err.message };
+  }
+});
+
+// ── Flip / Rotate ──────────────────────────────────────────────────────────
+
+ipcMain.handle('fliprotate:batch', async (_e, filePaths, options) => {
+  const results = [];
+  for (const fp of filePaths) {
+    try {
+      results.push({ success: true, ...(await compressor.flipRotateImage(fp, options)) });
+    } catch (err) {
+      results.push({ success: false, filePath: fp, error: err.message });
+    }
+  }
+  return results;
+});
+
+// ── Border / Pad ───────────────────────────────────────────────────────────
+
+ipcMain.handle('borderpad:batch', async (_e, filePaths, options) => {
+  const results = [];
+  for (const fp of filePaths) {
+    try {
+      results.push({ success: true, ...(await compressor.borderPadImage(fp, options)) });
+    } catch (err) {
+      results.push({ success: false, filePath: fp, error: err.message });
+    }
+  }
+  return results;
+});
+
 // ── Palette ────────────────────────────────────────────────────────────────
 
 ipcMain.handle('palette:extract', async (_e, filePath) =>
   compressor.extractPalette(filePath));
+
 
 // ── Remove Background ──────────────────────────────────────────────────────
 
@@ -301,6 +349,15 @@ ipcMain.handle('watch:start', (_e, dir, options) => {
 });
 
 ipcMain.handle('watch:stop', () => { folderWatcher.stop(); return true; });
+
+// ── Auto-launch ────────────────────────────────────────────────────────────
+
+ipcMain.handle('app:setAutoLaunch', (_e, enabled) => {
+  app.setLoginItemSettings({ openAtLogin: enabled });
+  return true;
+});
+
+ipcMain.handle('app:getAutoLaunch', () => app.getLoginItemSettings().openAtLogin);
 
 // ── App info ───────────────────────────────────────────────────────────────
 

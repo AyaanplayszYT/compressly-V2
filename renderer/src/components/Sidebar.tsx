@@ -97,17 +97,36 @@ const icons: Record<string, React.ReactNode> = {
       <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
     </svg>
   ),
+  cropper: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 2v14a2 2 0 0 0 2 2h14" /><path d="M18 22V8a2 2 0 0 0-2-2H2" />
+    </svg>
+  ),
+  fliprotate: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />
+    </svg>
+  ),
+  borderpad: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <rect x="7" y="7" width="10" height="10" rx="1" fill="currentColor" fillOpacity="0.15" />
+    </svg>
+  ),
 };
 
 const navGroups = [
   {
     label: 'Tools',
     items: [
-      { id: 'dashboard', label: 'Compress' },
-      { id: 'converter', label: 'Convert' },
-      { id: 'resizer',   label: 'Resize' },
-      { id: 'watermark', label: 'Watermark' },
-      { id: 'removebg',  label: 'Remove BG' },
+      { id: 'dashboard',  label: 'Compress' },
+      { id: 'converter',  label: 'Convert' },
+      { id: 'resizer',    label: 'Resize' },
+      { id: 'cropper',    label: 'Crop' },
+      { id: 'fliprotate', label: 'Flip & Rotate' },
+      { id: 'borderpad',  label: 'Border & Pad' },
+      { id: 'watermark',  label: 'Watermark' },
+      { id: 'removebg',   label: 'Remove BG' },
     ],
   },
   {

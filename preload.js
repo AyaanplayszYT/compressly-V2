@@ -24,6 +24,16 @@ contextBridge.exposeInMainWorld('api', {
 
   // ── Compression ──────────────────────────────────────────────────────────
   compressBatch: (paths, opts) => ipcRenderer.invoke('compress:batch', paths, opts),
+  compressCancel: () => ipcRenderer.invoke('compress:cancel'),
+
+  // ── Crop ─────────────────────────────────────────────────────────────────
+  cropImage: (filePath, opts) => ipcRenderer.invoke('crop:image', filePath, opts),
+
+  // ── Flip / Rotate ────────────────────────────────────────────────────────
+  flipRotateBatch: (paths, opts) => ipcRenderer.invoke('fliprotate:batch', paths, opts),
+
+  // ── Border / Pad ─────────────────────────────────────────────────────────
+  borderPadBatch: (paths, opts) => ipcRenderer.invoke('borderpad:batch', paths, opts),
 
   // ── Convert ──────────────────────────────────────────────────────────────
   convertBatch: (paths, opts) => ipcRenderer.invoke('convert:batch', paths, opts),
@@ -59,6 +69,10 @@ contextBridge.exposeInMainWorld('api', {
   // ── Folder watcher ───────────────────────────────────────────────────────
   watchStart: (dir, opts) => ipcRenderer.invoke('watch:start', dir, opts),
   watchStop: () => ipcRenderer.invoke('watch:stop'),
+
+  // ── Auto-launch ──────────────────────────────────────────────────────────
+  setAutoLaunch: (enabled) => ipcRenderer.invoke('app:setAutoLaunch', enabled),
+  getAutoLaunch: () => ipcRenderer.invoke('app:getAutoLaunch'),
 
   // ── App info ─────────────────────────────────────────────────────────────
   getVersion: () => ipcRenderer.invoke('app:version'),

@@ -252,6 +252,71 @@ async function stripExif(filePath, outputDir = null) {
   return { filePath, outputPath: outPath, originalSize: fs.statSync(filePath).size, outputSize: fs.statSync(outPath).size };
 }
 
+// ── Crop ──────────────────────────────────────────────────────────────────────
+
+async function cropImage(filePath, options = {}) {
+  const { left = 0, top = 0, width, height, outputDir = null } = options;
+  const meta = await sharp(filePath).metadata();
+  checkPixels(meta);
+
+  const srcExt = (meta.format || 'jpg').toLowerCase();
+  const ext = srcExt === 'jpeg' ? 'jpg' : srcExt;
+  const outDir = outputDir || path.dirname(filePath);
+  const base = path.basename(filePath, path.extname(filePath));
+  const outPath = safeOutPath(outDir, base, ext, 'cropped');
+
+  await atomicWrite(
+    formatPipeline(sharp(filePath).extract({ left, top, width, height }), srcExt, 95),
+    outPath
+  );
+
+  return { filePath, outputPath: outPath, originalSize: fs.statSync(filePath).size, outputSize: fs.statSync(outPath).size };
+}
+
+// ── Flip / Rotate ─────────────────────────────────────────────────────────────
+
+async function flipRotateImage(filePath, options = {}) {
+  const { flipH = false, flipV = false, angle = 0, outputDir = null } = options;
+  const meta = await sharp(filePath).metadata();
+  checkPixels(meta);
+
+  const srcExt = (meta.format || 'jpg').toLowerCase();
+  const ext = srcExt === 'jpeg' ? 'jpg' : srcExt;
+  const outDir = outputDir || path.dirname(filePath);
+  const base = path.basename(filePath, path.extname(filePath));
+  const outPath = safeOutPath(outDir, base, ext, 'transformed');
+
+  let pipeline = sharp(filePath);
+  if (angle !== 0) pipeline = pipeline.rotate(angle);
+  if (flipH) pipeline = pipeline.flop();
+  if (flipV) pipeline = pipeline.flip();
+
+  await atomicWrite(formatPipeline(pipeline, srcExt, 95), outPath);
+
+  return { filePath, outputPath: outPath, originalSize: fs.statSync(filePath).size, outputSize: fs.statSync(outPath).size };
+}
+
+// ── Border / Pad ──────────────────────────────────────────────────────────────
+
+async function borderPadImage(filePath, options = {}) {
+  const { top = 0, right = 0, bottom = 0, left = 0, background = { r: 255, g: 255, b: 255, alpha: 1 }, outputDir = null } = options;
+  const meta = await sharp(filePath).metadata();
+  checkPixels(meta);
+
+  const srcExt = (meta.format || 'jpg').toLowerCase();
+  const ext = srcExt === 'jpeg' ? 'jpg' : srcExt;
+  const outDir = outputDir || path.dirname(filePath);
+  const base = path.basename(filePath, path.extname(filePath));
+  const outPath = safeOutPath(outDir, base, ext, 'padded');
+
+  await atomicWrite(
+    formatPipeline(sharp(filePath).extend({ top, right, bottom, left, background }), srcExt, 95),
+    outPath
+  );
+
+  return { filePath, outputPath: outPath, originalSize: fs.statSync(filePath).size, outputSize: fs.statSync(outPath).size };
+}
+
 // ── Palette ───────────────────────────────────────────────────────────────
 
 async function extractPalette(filePath, count = 8) {
@@ -337,6 +402,9 @@ module.exports = {
   addWatermark,
   readExif,
   stripExif,
+  cropImage,
+  flipRotateImage,
+  borderPadImage,
   extractPalette,
   removeBg,
 };
