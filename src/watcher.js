@@ -1,9 +1,9 @@
 'use strict';
 
 const chokidar = require('chokidar');
-const path     = require('path');
+const path = require('path');
 
-const IMAGE_EXTS = new Set(['.jpg','.jpeg','.png','.webp','.bmp','.tiff','.tif']);
+const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff', '.tif']);
 
 let _watcher = null;
 
@@ -11,10 +11,10 @@ function start(dir, options, onFile) {
   stop();
 
   _watcher = chokidar.watch(dir, {
-    ignored:        /(^|[/\\])\.|_compressed|_resized|_clean|_watermarked/,
-    persistent:     true,
-    ignoreInitial:  true,
-    depth:          0,
+    ignored: /(^|[/\\])\.|_compressed|_resized|_clean|_watermarked/,
+    persistent: true,
+    ignoreInitial: true,
+    depth: 0,
     followSymlinks: false,
     awaitWriteFinish: { stabilityThreshold: 800, pollInterval: 100 },
   });
