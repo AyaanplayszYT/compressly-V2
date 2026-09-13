@@ -17,7 +17,7 @@
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
   [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11-0078D6?style=flat-square&logo=windows&logoColor=white)](https://www.microsoft.com/windows)
 
-  *No Python. No runtime install. No telemetry. 100% local.*
+<img width="1917" height="1016" alt="image" src="https://github.com/user-attachments/assets/1892bfa1-19f7-4a96-9183-bda78a4eed0c" />
 
 </div>
 
