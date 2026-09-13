@@ -66,6 +66,8 @@ The same warm dark UI and sidebar-based navigation you know from v1, rebuilt ent
 - **Dark / Light Theme** — instant switch, preference saved across sessions
 - **Hardened** — atomic writes, decompression-bomb cap (200 MP), no `shell: true`, no `eval`
 
+<img width="1280" height="642" alt="image" src="https://github.com/user-attachments/assets/f9532057-8ce6-4cd8-92c3-ef8dac46887e" />
+
 ---
 
 ## Getting Started
