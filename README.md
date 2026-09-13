@@ -1,7 +1,13 @@
 <div align="center">
   <img src="assets/compressly-logo.png" alt="Compressly Logo" width="120" />
 
-  # Compressly V2
+---
+
+<div align="center">
+  <img src="assets/compressly-darkmode.png" alt="Compressly Dark Mode" width="700" />
+</div>
+
+---
 
   **A modern, privacy-first image processing suite for Windows — rebuilt with Electron**
 
