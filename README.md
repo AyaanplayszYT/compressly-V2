@@ -128,6 +128,8 @@ To create a portable ZIP from the unpacked build:
 Compress-Archive -Path dist\win-unpacked\* -DestinationPath dist\Compressly-V2-windows.zip
 ```
 
+<img width="377" height="202" alt="image" src="https://github.com/user-attachments/assets/fbc38c07-f5d6-4425-a9d9-2291e7592dd3" />
+
 ---
 
 ## Security
