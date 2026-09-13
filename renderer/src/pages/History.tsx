@@ -76,7 +76,7 @@ export default function HistoryPage() {
     const csv = rows.map(r => r.join(',')).join('\n');
     const filePath = await window.api.saveFile({ defaultPath: 'compressly-history.csv', filters: [{ name: 'CSV', extensions: ['csv'] }] });
     if (filePath) {
-      await window.api.saveBase64(filePath, Buffer.from(csv).toString('base64'));
+      await window.api.saveBase64(filePath, btoa(unescape(encodeURIComponent(csv))));
       showToast('History exported as CSV', 'success');
     }
   };
@@ -85,7 +85,7 @@ export default function HistoryPage() {
     const json = JSON.stringify(history, null, 2);
     const filePath = await window.api.saveFile({ defaultPath: 'compressly-history.json', filters: [{ name: 'JSON', extensions: ['json'] }] });
     if (filePath) {
-      await window.api.saveBase64(filePath, Buffer.from(json).toString('base64'));
+      await window.api.saveBase64(filePath, btoa(unescape(encodeURIComponent(json))));
       showToast('History exported as JSON', 'success');
     }
   };

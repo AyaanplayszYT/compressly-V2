@@ -2,29 +2,29 @@
 
 const { contextBridge, ipcRenderer } = require('electron');
 
-// Expose a safe, minimal API surface to the renderer
 contextBridge.exposeInMainWorld('api', {
 
   // ── Window controls ──────────────────────────────────────────────────────
-  minimize: () => ipcRenderer.invoke('win:minimize'),
-  maximize: () => ipcRenderer.invoke('win:maximize'),
-  close: () => ipcRenderer.invoke('win:close'),
+  minimize:    () => ipcRenderer.invoke('win:minimize'),
+  maximize:    () => ipcRenderer.invoke('win:maximize'),
+  close:       () => ipcRenderer.invoke('win:close'),
   isMaximized: () => ipcRenderer.invoke('win:isMaximized'),
+  toggleFullscreen: () => ipcRenderer.invoke('win:fullscreen'),
 
   // ── Dialogs ──────────────────────────────────────────────────────────────
-  openFiles: (opts) => ipcRenderer.invoke('dialog:openFiles', opts),
-  openFolder: () => ipcRenderer.invoke('dialog:openFolder'),
-  saveFile: (opts) => ipcRenderer.invoke('dialog:saveFile', opts),
+  openFiles:  (opts) => ipcRenderer.invoke('dialog:openFiles', opts),
+  openFolder: ()     => ipcRenderer.invoke('dialog:openFolder'),
+  saveFile:   (opts) => ipcRenderer.invoke('dialog:saveFile', opts),
 
   // ── Shell ────────────────────────────────────────────────────────────────
-  showInFolder: (p) => ipcRenderer.invoke('shell:showInFolder', p),
-  openPath: (p) => ipcRenderer.invoke('shell:openPath', p),
-  openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
-  saveBase64: (filePath, data) => ipcRenderer.invoke('shell:saveBase64', filePath, data),
+  showInFolder: (p)           => ipcRenderer.invoke('shell:showInFolder', p),
+  openPath:     (p)           => ipcRenderer.invoke('shell:openPath', p),
+  openExternal: (url)         => ipcRenderer.invoke('shell:openExternal', url),
+  saveBase64:   (filePath, d) => ipcRenderer.invoke('shell:saveBase64', filePath, d),
 
   // ── Compression ──────────────────────────────────────────────────────────
-  compressBatch: (paths, opts) => ipcRenderer.invoke('compress:batch', paths, opts),
-  compressCancel: () => ipcRenderer.invoke('compress:cancel'),
+  compressBatch:  (paths, opts) => ipcRenderer.invoke('compress:batch', paths, opts),
+  compressCancel: ()            => ipcRenderer.invoke('compress:cancel'),
 
   // ── Crop ─────────────────────────────────────────────────────────────────
   cropImage: (filePath, opts) => ipcRenderer.invoke('crop:image', filePath, opts),
@@ -45,8 +45,9 @@ contextBridge.exposeInMainWorld('api', {
   watermarkBatch: (paths, opts) => ipcRenderer.invoke('watermark:batch', paths, opts),
 
   // ── EXIF ─────────────────────────────────────────────────────────────────
-  exifRead: (filePath) => ipcRenderer.invoke('exif:read', filePath),
-  exifStrip: (paths, dir) => ipcRenderer.invoke('exif:strip', paths, dir),
+  exifRead:    (filePath) => ipcRenderer.invoke('exif:read', filePath),
+  exifReadGps: (filePath) => ipcRenderer.invoke('exif:readGps', filePath),
+  exifStrip:   (paths, dir) => ipcRenderer.invoke('exif:strip', paths, dir),
 
   // ── Palette ──────────────────────────────────────────────────────────────
   paletteExtract: (filePath) => ipcRenderer.invoke('palette:extract', filePath),
@@ -57,27 +58,62 @@ contextBridge.exposeInMainWorld('api', {
   // ── Meta clean ───────────────────────────────────────────────────────────
   metacleanBatch: (paths, dir) => ipcRenderer.invoke('metaclean:batch', paths, dir),
 
+  // ── SSIM ─────────────────────────────────────────────────────────────────
+  ssimCompute: (origPath, compPath) => ipcRenderer.invoke('ssim:compute', origPath, compPath),
+
+  // ── Color Grade ──────────────────────────────────────────────────────────
+  colorGradeBatch: (paths, opts) => ipcRenderer.invoke('colorgrade:batch', paths, opts),
+
+  // ── Format Analyzer ──────────────────────────────────────────────────────
+  formatAnalyze: (filePath) => ipcRenderer.invoke('format:analyze', filePath),
+
+  // ── Thumbnail ────────────────────────────────────────────────────────────
+  generateThumbnail: (filePath, opts) => ipcRenderer.invoke('thumbnail:generate', filePath, opts),
+
+  // ── Batch Rename ─────────────────────────────────────────────────────────
+  renameBatch: (paths, opts) => ipcRenderer.invoke('rename:batch', paths, opts),
+
+  // ── Doc Convert ──────────────────────────────────────────────────────────
+  imagesToPdf:       (paths, opts) => ipcRenderer.invoke('convert:imagesToPdf', paths, opts),
+  officeToPdf:       (paths, opts) => ipcRenderer.invoke('convert:officeToPdf', paths, opts),
+  htmlToPdf:         (src, opts)   => ipcRenderer.invoke('convert:htmlToPdf', src, opts),
+
+  // ── Recursive Folder Walk ─────────────────────────────────────────────────
+  folderWalk: (dir) => ipcRenderer.invoke('folder:walk', dir),
+
+  // ── Clipboard ────────────────────────────────────────────────────────────
+  clipboardReadImage: () => ipcRenderer.invoke('clipboard:readImage'),
+
+  // ── Queue Persistence ─────────────────────────────────────────────────────
+  queueSave:  (queue) => ipcRenderer.invoke('queue:save', queue),
+  queueLoad:  ()      => ipcRenderer.invoke('queue:load'),
+  queueClear: ()      => ipcRenderer.invoke('queue:clear'),
+
+  // ── Cloud Upload ──────────────────────────────────────────────────────────
+  cloudUpload: (filePath, opts) => ipcRenderer.invoke('cloud:upload', filePath, opts),
+
   // ── History ──────────────────────────────────────────────────────────────
-  historyGet: () => ipcRenderer.invoke('history:get'),
+  historyGet:   () => ipcRenderer.invoke('history:get'),
   historyClear: () => ipcRenderer.invoke('history:clear'),
 
   // ── Settings ─────────────────────────────────────────────────────────────
-  settingGet: (key, def) => ipcRenderer.invoke('settings:get', key, def),
-  settingSet: (key, val) => ipcRenderer.invoke('settings:set', key, val),
-  settingsGetAll: () => ipcRenderer.invoke('settings:getAll'),
+  settingGet:    (key, def) => ipcRenderer.invoke('settings:get', key, def),
+  settingSet:    (key, val) => ipcRenderer.invoke('settings:set', key, val),
+  settingsGetAll: ()        => ipcRenderer.invoke('settings:getAll'),
 
   // ── Folder watcher ───────────────────────────────────────────────────────
-  watchStart: (dir, opts) => ipcRenderer.invoke('watch:start', dir, opts),
-  watchStop: () => ipcRenderer.invoke('watch:stop'),
+  watchStart:        (dir, opts) => ipcRenderer.invoke('watch:start', dir, opts),
+  watchStop:         ()          => ipcRenderer.invoke('watch:stop'),
+  watchPendingCount: ()          => ipcRenderer.invoke('watch:pendingCount'),
 
   // ── Auto-launch ──────────────────────────────────────────────────────────
   setAutoLaunch: (enabled) => ipcRenderer.invoke('app:setAutoLaunch', enabled),
-  getAutoLaunch: () => ipcRenderer.invoke('app:getAutoLaunch'),
+  getAutoLaunch: ()        => ipcRenderer.invoke('app:getAutoLaunch'),
 
   // ── App info ─────────────────────────────────────────────────────────────
-  getVersion: () => ipcRenderer.invoke('app:version'),
+  getVersion:  () => ipcRenderer.invoke('app:version'),
   getPlatform: () => ipcRenderer.invoke('app:platform'),
-  getArch: () => ipcRenderer.invoke('app:arch'),
+  getArch:     () => ipcRenderer.invoke('app:arch'),
   getUserData: () => ipcRenderer.invoke('app:userData'),
 
   // ── Event subscriptions (main → renderer) ────────────────────────────────
@@ -85,6 +121,7 @@ contextBridge.exposeInMainWorld('api', {
     const allowed = [
       'win:state',
       'compress:progress',
+      'compress:eta',
       'watch:compressed',
       'watch:error',
     ];

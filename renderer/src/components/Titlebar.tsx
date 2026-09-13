@@ -5,16 +5,47 @@ interface TitlebarProps {
 }
 
 export default function Titlebar({ onToggleSidebar }: TitlebarProps) {
-  const [status, setStatus] = useState<'idle' | 'running' | 'done'>('idle');
+  const [status, setStatus]         = useState<'idle' | 'running' | 'done'>('idle');
   const [statusText, setStatusText] = useState('Ready');
 
   useEffect(() => {
-    const handleProgress = () => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const handleProgress = (data?: any) => {
       setStatus('running');
       setStatusText('Processing…');
+
+      if (data && data.total && (data.index + 1 >= data.total || data.completed >= data.total)) {
+        setStatus('done');
+        setStatusText('Done');
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          setStatus('idle');
+          setStatusText('Ready');
+        }, 3000);
+      }
     };
+
+    const handleEta = (data?: any) => {
+      if (data && data.total && data.completed >= data.total) {
+        setStatus('done');
+        setStatusText('Done');
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          setStatus('idle');
+          setStatusText('Ready');
+        }, 3000);
+      }
+    };
+
     window.api.on('compress:progress', handleProgress);
-    return () => window.api.off('compress:progress', handleProgress);
+    window.api.on('compress:eta', handleEta);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      window.api.off('compress:progress', handleProgress);
+      window.api.off('compress:eta', handleEta);
+    };
   }, []);
 
   return (

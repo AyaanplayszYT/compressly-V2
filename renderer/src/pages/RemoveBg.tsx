@@ -139,7 +139,7 @@ export default function RemoveBgPage() {
                 flex: 1, padding: 0, overflow: 'hidden',
                 background: 'repeating-conic-gradient(var(--surface3) 0% 25%, var(--surface2) 0% 50%) 50% / 20px 20px'
               }}>
-                <img src={`file:///${result.outputPath.replace(/\\/g, '/')}?t=${Date.now()}`} style={{ width: '100%', display: 'block' }} alt="Result" />
+                <img src={`local:///${result.outputPath.replace(/\\/g, '/')}?t=${Date.now()}`} style={{ width: '100%', display: 'block' }} alt="Result" />
               </div>
               <div className="card" style={{ width: 300, display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

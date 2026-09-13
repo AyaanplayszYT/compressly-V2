@@ -4,6 +4,42 @@
 ═══════════════════════════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+/* ── Beta Theme (Vercel Clean Dark) ────────────────────────── */
+:root[data-theme="beta"] {
+  --bg:             #000000;
+  --surface:        #0A0A0A;
+  --surface2:       #111111;
+  --border-color:   #333333;
+  --text:           #EDEDED;
+  --text2:          #A1A1AA;
+  --text3:          #71717A;
+
+  --accent:         #EDEDED;
+  --primary:        #0070F3; /* Vercel Blue */
+  --green:          #10B981;
+  --red:            #EF4444;
+  --yellow:         #F5A623;
+
+  --toast-bg:       #111111;
+  --sidebar-bg:     #000000;
+  --titlebar-bg:    #000000;
+
+  --input-bg:       #0A0A0A;
+  --row-bg:         #0A0A0A;
+  --row-hover:      #111111;
+  --btn-bg:         #111111;
+
+  --border-width:   1px;
+  --shadow:         0 4px 14px 0 rgba(0,0,0,0.5);
+  --shadow-hover:   0 6px 20px rgba(0,0,0,0.6);
+  --shadow-active:  0 2px 4px rgba(0,0,0,0.4);
+
+  --radius:         8px;
+  --radius-sm:      6px;
+  --radius-lg:      12px;
+}
 
 /* ── Dark Theme Tokens (default) ───────────────────────────── */
 :root {
@@ -41,32 +77,6 @@
   --font:      'Space Grotesk', system-ui, sans-serif;
   --transition:      150ms ease;
   --transition-slow: 250ms ease;
-}
-
-/* ── Light Theme Tokens ────────────────────────────────────── */
-:root[data-theme="light"] {
-  --bg:             #F5EFE9; /* Soft cream */
-  --surface:        #FFFDFB; /* Warm white */
-  --surface2:       #EAE2DA;
-  --border-color:   #252220; /* Dark brown lines */
-  --text:           #252220;
-  --text2:          #5E5854;
-  --text3:          #8A837E;
-  
-  --accent:         #C65738; /* Dark orange */
-  --primary:        #C69338; /* Mustard brown */
-  --green:          #6A7F63;
-  --red:            #A8423E;
-  --yellow:         #C69338;
-  
-  --toast-bg:       #FFFDFB;
-  --sidebar-bg:     #F5EFE9;
-  --titlebar-bg:    #F5EFE9;
-  
-  --input-bg:       #FFFDFB;
-  --row-bg:         #FFFDFB;
-  --row-hover:      #F5EFE9;
-  --btn-bg:         #EAE2DA;
 }
 
 /* ── Reset ──────────────────────────────────────────────────── */

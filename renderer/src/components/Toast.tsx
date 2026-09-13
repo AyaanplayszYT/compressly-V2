@@ -1,54 +1,67 @@
-import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 
-interface ToastItem {
+interface ToastAction { label: string; onClick: () => void; }
+
+interface Toast {
   id: number;
   message: string;
   type: 'success' | 'error' | 'info';
-  dismissing?: boolean;
+  action?: ToastAction;
 }
 
 interface ToastContextValue {
-  showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
+  showToast: (message: string, type?: Toast['type'], action?: ToastAction) => void;
 }
 
 const ToastContext = createContext<ToastContextValue>({ showToast: () => {} });
+export const useToast = () => useContext(ToastContext);
 
-export function useToast() {
-  return useContext(ToastContext);
-}
+let _nextId = 1;
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const idRef = useRef(0);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const timers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
 
-  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
-    const id = ++idRef.current;
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => dismissToast(id), 3500);
+  const removeToast = useCallback((id: number) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+    if (timers.current[id]) clearTimeout(timers.current[id]);
+    delete timers.current[id];
   }, []);
 
-  const dismissToast = useCallback((id: number) => {
-    setToasts(prev => prev.map(t => t.id === id ? { ...t, dismissing: true } : t));
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 200);
+  const showToast = useCallback((message: string, type: Toast['type'] = 'info', action?: ToastAction) => {
+    const id = _nextId++;
+    setToasts(prev => [...prev, { id, message, type, action }]);
+    timers.current[id] = setTimeout(() => removeToast(id), action ? 6000 : 3500);
+  }, [removeToast]);
+
+  const dismissAll = useCallback(() => {
+    Object.values(timers.current).forEach(clearTimeout);
+    timers.current = {};
+    setToasts([]);
   }, []);
 
-  const icons: Record<string, string> = {
-    success: '✓',
-    error: '✕',
-    info: 'ℹ',
-  };
+  const icon = (t: Toast['type']) =>
+    t === 'success' ? '✓' : t === 'error' ? '✕' : 'ℹ';
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
       <div id="toast-container">
-        {toasts.map(toast => (
-          <div key={toast.id} className={`toast ${toast.type} ${toast.dismissing ? 'dismissing' : ''}`}>
-            <span className="toast-icon">{icons[toast.type]}</span>
-            <span className="toast-msg">{toast.message}</span>
-            <button className="toast-close" onClick={() => dismissToast(toast.id)}>✕</button>
+        {toasts.length > 1 && (
+          <button className="toast-dismiss-all" onClick={dismissAll}>
+            Dismiss all ({toasts.length})
+          </button>
+        )}
+        {toasts.map(t => (
+          <div key={t.id} className={`toast ${t.type}`}>
+            <span className="toast-icon">{icon(t.type)}</span>
+            <span className="toast-msg">{t.message}</span>
+            {t.action && (
+              <button className="toast-action" onClick={() => { t.action!.onClick(); removeToast(t.id); }}>
+                {t.action.label}
+              </button>
+            )}
+            <button className="toast-close" onClick={() => removeToast(t.id)}>✕</button>
           </div>
         ))}
       </div>

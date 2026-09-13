@@ -4,10 +4,12 @@ import { useToast } from '../components/Toast';
 const TOKENS = [
   { token: '{name}',    desc: 'Original filename (without extension)' },
   { token: '{date}',    desc: 'Current date (YYYY-MM-DD)' },
+  { token: '{time}',    desc: 'Current time (HH-MM-SS)' },
   { token: '{width}',   desc: 'Image width in pixels' },
   { token: '{height}',  desc: 'Image height in pixels' },
-  { token: '{format}',  desc: 'Output format (webp, jpg, png)' },
+  { token: '{format}',  desc: 'Output format (webp, jpg, png, avif)' },
   { token: '{quality}', desc: 'Quality setting (1–100)' },
+  { token: '{index}',   desc: 'Sequential file index (001, 002…)' },
 ];
 
 export default function NamingPage() {
@@ -34,12 +36,14 @@ export default function NamingPage() {
   // Live preview
   const now = new Date();
   const preview = template
-    .replace(/{name}/g, 'photo')
-    .replace(/{date}/g, now.toISOString().slice(0, 10))
-    .replace(/{width}/g, '1920')
-    .replace(/{height}/g, '1080')
-    .replace(/{format}/g, 'webp')
-    .replace(/{quality}/g, '82');
+    .replace(/{name}/g,    'photo')
+    .replace(/{date}/g,    now.toISOString().slice(0, 10))
+    .replace(/{time}/g,    now.toTimeString().slice(0, 8).replace(/:/g, '-'))
+    .replace(/{width}/g,   '1920')
+    .replace(/{height}/g,  '1080')
+    .replace(/{format}/g,  'webp')
+    .replace(/{quality}/g, '82')
+    .replace(/{index}/g,   '001');
 
   if (!loaded) return null;
 

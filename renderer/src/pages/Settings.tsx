@@ -18,27 +18,43 @@ const ACCENT_SWATCHES = [
 ];
 
 export default function SettingsPage({ theme, onThemeChange }: SettingsProps) {
-  const [format, setFormat] = useState('webp');
-  const [quality, setQuality] = useState(82);
-  const [outdir, setOutdir] = useState('');
-  const [keepMeta, setKeepMeta] = useState(false);
-  const [autoLaunch, setAutoLaunch] = useState(false);
-  const [accentIdx, setAccentIdx] = useState(0);
+  const [format,       setFormat]       = useState('webp');
+  const [quality,      setQuality]      = useState(82);
+  const [outdir,       setOutdir]       = useState('');
+  const [keepMeta,     setKeepMeta]     = useState(false);
+  const [autoLaunch,   setAutoLaunch]   = useState(false);
+  const [accentIdx,    setAccentIdx]    = useState(0);
+  const [autoCompress, setAutoCompress] = useState(false);
+  const [sharpenAfter, setSharpenAfter] = useState(false);
+  const [concurrency,  setConcurrency]  = useState(4);
+  // Cloud settings
+  const [cloudProvider,  setCloudProvider]  = useState('s3');
+  const [cloudAccessKey, setCloudAccessKey] = useState('');
+  const [cloudSecretKey, setCloudSecretKey] = useState('');
+  const [cloudBucket,    setCloudBucket]    = useState('');
+  const [cloudEndpoint,  setCloudEndpoint]  = useState('');
+  const [cloudRegion,    setCloudRegion]    = useState('us-east-1');
   const { showToast } = useToast();
 
   useEffect(() => {
     window.api.settingsGetAll().then((s: any) => {
-      if (s.defaultFormat) setFormat(s.defaultFormat);
-      if (s.defaultQuality) setQuality(s.defaultQuality);
+      if (s.defaultFormat)    setFormat(s.defaultFormat);
+      if (s.defaultQuality)   setQuality(s.defaultQuality);
       if (s.defaultOutputDir) setOutdir(s.defaultOutputDir);
-      if (s.keepMetadata !== undefined) setKeepMeta(s.keepMetadata);
-      if (s.accentIdx !== undefined) setAccentIdx(s.accentIdx);
+      if (s.keepMetadata !== undefined)  setKeepMeta(s.keepMetadata);
+      if (s.accentIdx !== undefined)     setAccentIdx(s.accentIdx);
+      if (s.autoCompress !== undefined)  setAutoCompress(s.autoCompress);
+      if (s.sharpenAfter !== undefined)  setSharpenAfter(s.sharpenAfter);
+      if (s.workerConcurrency)           setConcurrency(s.workerConcurrency);
+      if (s.cloudProvider)   setCloudProvider(s.cloudProvider);
+      if (s.cloudAccessKey)  setCloudAccessKey(s.cloudAccessKey);
+      if (s.cloudSecretKey)  setCloudSecretKey(s.cloudSecretKey);
+      if (s.cloudBucket)     setCloudBucket(s.cloudBucket);
+      if (s.cloudEndpoint)   setCloudEndpoint(s.cloudEndpoint);
+      if (s.cloudRegion)     setCloudRegion(s.cloudRegion);
     });
 
-    // Load auto-launch state
     window.api.settingGet?.('autoLaunch', false).then((val: boolean) => setAutoLaunch(val));
-
-    // Apply saved accent
     window.api.settingGet?.('accentIdx', 0).then((idx: number) => {
       setAccentIdx(idx);
       applyAccent(idx);
@@ -64,11 +80,20 @@ export default function SettingsPage({ theme, onThemeChange }: SettingsProps) {
   };
 
   const handleSave = async () => {
-    await window.api.settingSet('defaultFormat', format);
-    await window.api.settingSet('defaultQuality', quality);
+    await window.api.settingSet('defaultFormat',    format);
+    await window.api.settingSet('defaultQuality',   quality);
     await window.api.settingSet('defaultOutputDir', outdir);
-    await window.api.settingSet('keepMetadata', keepMeta);
-    await window.api.settingSet('accentIdx', accentIdx);
+    await window.api.settingSet('keepMetadata',     keepMeta);
+    await window.api.settingSet('accentIdx',        accentIdx);
+    await window.api.settingSet('autoCompress',     autoCompress);
+    await window.api.settingSet('sharpenAfter',     sharpenAfter);
+    await window.api.settingSet('workerConcurrency',concurrency);
+    await window.api.settingSet('cloudProvider',    cloudProvider);
+    await window.api.settingSet('cloudAccessKey',   cloudAccessKey);
+    await window.api.settingSet('cloudSecretKey',   cloudSecretKey);
+    await window.api.settingSet('cloudBucket',      cloudBucket);
+    await window.api.settingSet('cloudEndpoint',    cloudEndpoint);
+    await window.api.settingSet('cloudRegion',      cloudRegion);
     showToast('Settings saved successfully', 'success');
   };
 
@@ -90,22 +115,37 @@ export default function SettingsPage({ theme, onThemeChange }: SettingsProps) {
           <h3>Appearance</h3>
           <div className="form-group">
             <label className="form-label">Theme</label>
-            <div style={{ display: 'flex', gap: 10 }}>
+            {/* Themes: Default and Vercel */}
+            <div style={{ display: 'flex', gap: 12 }}>
               {[
-                { key: 'dark', label: 'Dark', icon: <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /> },
-                { key: 'light', label: 'Light', icon: <><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></> },
-                { key: 'system', label: 'System', icon: <><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></> },
-              ].map(({ key, label, icon }) => (
-                <button
-                  key={key}
-                  className={`btn ${savedThemeKey === key ? 'btn-primary' : ''}`}
-                  onClick={() => onThemeChange(key)}
-                  style={{ flex: 1, padding: 12 }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6 }}>{icon}</svg>
-                  {label}
-                </button>
-              ))}
+                { key: 'dark', label: 'Default', desc: 'Warm Neo-Brutalist', bg: '#252220', accent: '#D26A4A', icon: <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /> },
+                { key: 'beta', label: 'Vercel', desc: 'Minimal Clean Dark', bg: '#000000', accent: '#EDEDED', icon: <path d="M12 2L2 22h20L12 2z" /> },
+              ].map(({ key, label, desc, bg, accent, icon }) => {
+                const isActive = savedThemeKey === key || (key === 'dark' && savedThemeKey !== 'beta');
+                return (
+                  <button
+                    key={key}
+                    className={`btn theme-btn ${isActive ? 'theme-btn-active' : ''}`}
+                    onClick={() => onThemeChange(key)}
+                    style={{
+                      flex: 1,
+                      padding: '14px 12px',
+                      flexDirection: 'column',
+                      gap: 8,
+                      height: 'auto',
+                      background: bg,
+                      border: isActive ? `2px solid ${accent}` : '2px solid var(--border-color)',
+                      color: accent,
+                    }}
+                  >
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={key === 'beta' ? '#000' : '#fff'} strokeWidth="2.5">{icon}</svg>
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', color: key === 'beta' ? '#EDEDED' : 'var(--text)', letterSpacing: 0.5 }}>{label}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 600 }}>{desc}</div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -177,6 +217,30 @@ export default function SettingsPage({ theme, onThemeChange }: SettingsProps) {
           </label>
         </div>
 
+        {/* Behaviour */}
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <h3>Behaviour</h3>
+          <label className="label" style={{ gap: 10, cursor: 'pointer', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontWeight: 700 }}>Auto-compress on Import</div>
+              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>Start compressing immediately when files are added to the queue</div>
+            </div>
+            <div className={`toggle-switch ${autoCompress ? 'on' : ''}`} onClick={() => setAutoCompress(!autoCompress)} />
+          </label>
+          <label className="label" style={{ gap: 10, cursor: 'pointer', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontWeight: 700 }}>Sharpen After Compress</div>
+              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>Apply a subtle sharpening pass to recover perceived detail</div>
+            </div>
+            <div className={`toggle-switch ${sharpenAfter ? 'on' : ''}`} onClick={() => setSharpenAfter(!sharpenAfter)} />
+          </label>
+          <div className="form-group">
+            <label className="form-label">Worker Concurrency: <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{concurrency} threads</span></label>
+            <input type="range" min={1} max={8} value={concurrency} onChange={e => setConcurrency(parseInt(e.target.value))} style={{ maxWidth: 240 }} />
+            <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>Higher = faster batch, more CPU usage</div>
+          </div>
+        </div>
+
         {/* System */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <h3>System</h3>
@@ -190,6 +254,43 @@ export default function SettingsPage({ theme, onThemeChange }: SettingsProps) {
               onClick={() => handleAutoLaunchToggle(!autoLaunch)}
             />
           </label>
+        </div>
+
+        {/* Cloud Upload */}
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <h3>☁️ Cloud Upload</h3>
+          <div style={{ fontSize: 12, color: 'var(--text3)' }}>Upload compressed files directly to cloud storage after processing.</div>
+          <div className="form-group">
+            <label className="form-label">Provider</label>
+            <select value={cloudProvider} onChange={e => setCloudProvider(e.target.value)} style={{ maxWidth: 200 }}>
+              <option value="s3">AWS S3</option>
+              <option value="r2">Cloudflare R2</option>
+              <option value="cf-images">Cloudflare Images</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Access Key ID</label>
+            <input type="text" value={cloudAccessKey} onChange={e => setCloudAccessKey(e.target.value)} placeholder="AKIA…" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Secret Access Key</label>
+            <input type="password" value={cloudSecretKey} onChange={e => setCloudSecretKey(e.target.value)} placeholder="••••••••" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Bucket Name</label>
+            <input type="text" value={cloudBucket} onChange={e => setCloudBucket(e.target.value)} placeholder="my-bucket" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Region (S3) / Endpoint (R2)</label>
+            <input type="text" value={cloudRegion} onChange={e => setCloudRegion(e.target.value)} placeholder="us-east-1 or https://…r2.cloudflarestorage.com" />
+          </div>
+          {cloudProvider !== 's3' && (
+            <div className="form-group">
+              <label className="form-label">Custom Endpoint URL</label>
+              <input type="text" value={cloudEndpoint} onChange={e => setCloudEndpoint(e.target.value)} placeholder="https://account.r2.cloudflarestorage.com" />
+            </div>
+          )}
+          <div style={{ fontSize: 11, color: 'var(--text3)' }}>⚠ Credentials are stored locally in your app data folder, never transmitted.</div>
         </div>
 
         <button className="btn btn-primary btn-lg" onClick={handleSave}>Save Settings</button>

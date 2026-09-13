@@ -4,11 +4,13 @@ export default function AboutPage() {
   const [version, setVersion] = useState('');
   const [platform, setPlatform] = useState('');
   const [arch, setArch] = useState('');
+  const [lifetimeSaved, setLifetimeSaved] = useState(0);
 
   useEffect(() => {
     window.api.getVersion().then(v => setVersion(v));
     window.api.getPlatform().then(p => setPlatform(p));
     window.api.getArch().then(a => setArch(a));
+    window.api.settingGet('lifetimeSavedBytes', 0).then(val => setLifetimeSaved(val));
   }, []);
 
   return (
@@ -38,9 +40,18 @@ export default function AboutPage() {
         <p className="muted" style={{ marginBottom: 24, fontSize: 13 }}>
           🔒 100% offline — zero uploads, zero telemetry, zero tracking.
         </p>
-
         <div className="divider" />
 
+        <div style={{ margin: '24px 0', background: 'var(--surface2)', padding: '16px', borderRadius: 12, border: '2px solid var(--accent)' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+            Lifetime Space Saved
+          </div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--text)' }}>
+            {lifetimeSaved > 0 ? (lifetimeSaved / 1024 / 1024 / 1024).toFixed(2) + ' GB' : '0 GB'}
+          </div>
+        </div>
+
+        <div className="divider" />
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 24 }}>
           <button className="btn" onClick={() => window.api.openExternal('https://github.com/AyaanplayszYT/compressly-V2')}>
             GitHub
@@ -51,7 +62,7 @@ export default function AboutPage() {
         </div>
 
         <div style={{ marginTop: 32, color: 'var(--text3)', fontSize: 12 }}>
-          Made with ❤️ by <strong style={{ color: 'var(--text2)' }}>Mistix</strong>
+          Made with ❤️ · 100% Free & Open Source
         </div>
       </div>
     </div>

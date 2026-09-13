@@ -3,18 +3,23 @@ import { fmtBytes, basename } from '../utils';
 import { useToast } from '../components/Toast';
 
 export default function ExifPage() {
-  const [filePath, setFilePath] = useState<string | null>(null);
-  const [exifData, setExifData] = useState<any>(null);
+  const [filePath,   setFilePath]   = useState<string | null>(null);
+  const [exifData,   setExifData]   = useState<any>(null);
+  const [gpsData,    setGpsData]    = useState<any>(null);
   const [processing, setProcessing] = useState(false);
-  const [stripResult, setStripResult] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [stripResult,setStripResult]= useState<any>(null);
+  const [error,      setError]      = useState<string | null>(null);
   const { showToast } = useToast();
 
   const readExif = async (path: string) => {
-    setFilePath(path); setExifData(null); setStripResult(null); setError(null);
+    setFilePath(path); setExifData(null); setGpsData(null); setStripResult(null); setError(null);
     try {
-      const data = await window.api.exifRead(path);
+      const [data, gps] = await Promise.all([
+        window.api.exifRead(path),
+        window.api.exifReadGps(path).catch(() => null),
+      ]);
       setExifData(data);
+      setGpsData(gps);
     } catch (err: any) { setError(err.message || 'Failed to read EXIF data'); }
   };
 
@@ -37,7 +42,9 @@ export default function ExifPage() {
       if (res?.[0]?.success) {
         setStripResult(res[0]);
         const newData = await window.api.exifRead(res[0].outputPath);
+        const newGps  = await window.api.exifReadGps(res[0].outputPath).catch(() => null);
         setExifData(newData);
+        setGpsData(newGps);
         showToast('EXIF metadata stripped successfully', 'success');
       } else { setError(res?.[0]?.error || 'Failed to strip EXIF'); }
     } catch (err: any) { setError(err.message); }
@@ -45,16 +52,17 @@ export default function ExifPage() {
   };
 
   const rows = exifData ? [
-    { label: 'Dimensions', value: `${exifData.width} × ${exifData.height} px` },
-    { label: 'Format', value: (exifData.format || '').toUpperCase() },
-    { label: 'Color Space', value: exifData.space || '—' },
-    { label: 'File Size', value: fmtBytes(exifData.size) },
-    { label: 'Channels', value: exifData.channels || '—' },
+    { label: 'Dimensions',    value: `${exifData.width} × ${exifData.height} px` },
+    { label: 'Format',        value: (exifData.format || '').toUpperCase() },
+    { label: 'Color Space',   value: exifData.space || '—' },
+    { label: 'File Size',     value: fmtBytes(exifData.size) },
+    { label: 'Channels',      value: exifData.channels || '—' },
     { label: 'Density (DPI)', value: exifData.density || 'N/A' },
-    { label: 'Has Alpha', value: exifData.hasAlpha ? 'Yes' : 'No' },
-    { label: 'EXIF Data', value: exifData.hasExif ? '⚠ Yes (contains tracking info)' : '✓ Clean', highlight: exifData.hasExif },
-    { label: 'ICC Profile', value: exifData.hasIcc ? 'Yes' : 'No' },
-    { label: 'Progressive', value: exifData.isProgressive ? 'Yes' : 'No' },
+    { label: 'Has Alpha',     value: exifData.hasAlpha ? 'Yes' : 'No' },
+    { label: 'Pages / Frames',value: exifData.pages > 1 ? `${exifData.pages} (animated)` : '1' },
+    { label: 'EXIF Data',     value: exifData.hasExif ? '⚠ Yes (contains tracking info)' : '✓ Clean', highlight: exifData.hasExif },
+    { label: 'ICC Profile',   value: exifData.hasIcc ? 'Yes' : 'No' },
+    { label: 'Progressive',   value: exifData.isProgressive ? 'Yes' : 'No' },
   ] : [];
 
   return (
@@ -67,7 +75,7 @@ export default function ExifPage() {
         {exifData?.hasExif && (
           <div className="page-header-right">
             <button className="btn btn-primary" onClick={handleStrip} disabled={processing}>
-              {processing ? 'Stripping…' : 'Strip Metadata'}
+              {processing ? 'Stripping…' : 'Strip All Metadata'}
             </button>
           </div>
         )}
@@ -94,6 +102,38 @@ export default function ExifPage() {
               </>
             )}
           </div>
+
+          {/* GPS info card */}
+          {gpsData && (
+            <div className="card" style={{ padding: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <span style={{ fontSize: 18 }}>📍</span>
+                <h3 style={{ margin: 0 }}>GPS Location</h3>
+                <span className="badge" style={{ background: 'rgba(220,60,60,0.12)', color: 'var(--red)' }}>Private</span>
+              </div>
+              <div className="file-info-row">
+                <span className="muted">Latitude</span>
+                <span style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: 12 }}>{gpsData.lat.toFixed(6)}° {gpsData.latRef}</span>
+              </div>
+              <div className="file-info-row">
+                <span className="muted">Longitude</span>
+                <span style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: 12 }}>{gpsData.lon.toFixed(6)}° {gpsData.lonRef}</span>
+              </div>
+              {/* OpenStreetMap embed */}
+              <div style={{ marginTop: 10, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                <iframe
+                  title="GPS Location"
+                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${gpsData.lon - 0.01},${gpsData.lat - 0.01},${gpsData.lon + 0.01},${gpsData.lat + 0.01}&layer=mapnik&marker=${gpsData.lat},${gpsData.lon}`}
+                  style={{ width: '100%', height: 160, border: 'none' }}
+                  loading="lazy"
+                />
+              </div>
+              <button className="btn btn-danger btn-sm" style={{ width: '100%', marginTop: 10 }} onClick={handleStrip} disabled={processing}>
+                {processing ? 'Stripping…' : '🗑 Strip GPS Data'}
+              </button>
+            </div>
+          )}
+
           {stripResult && (
             <div className="result-box success">
               <h3 style={{ color: 'var(--green)', fontSize: 14, marginBottom: 4 }}>Metadata Stripped!</h3>

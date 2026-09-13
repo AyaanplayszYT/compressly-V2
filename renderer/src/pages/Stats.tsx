@@ -3,8 +3,12 @@ import { fmtBytes } from '../utils';
 
 export default function StatsPage() {
   const [history, setHistory] = useState<any[]>([]);
+  const [lifetimeSaved, setLifetimeSaved] = useState(0);
 
-  useEffect(() => { window.api.historyGet().then(data => setHistory(data)); }, []);
+  useEffect(() => { 
+    window.api.historyGet().then(data => setHistory(data));
+    window.api.settingGet('lifetimeSavedBytes', 0).then(val => setLifetimeSaved(val));
+  }, []);
 
   const totalProcessed = history.length;
   const totalOriginal = history.reduce((a, h) => a + (h.originalSize || 0), 0);
@@ -31,13 +35,16 @@ export default function StatsPage() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20, marginBottom: 24 }}>
-        <div className="stat-card">
-          <div className="stat-card-label">Total Space Saved</div>
-          <div className="stat-card-value">{fmtBytes(totalSaved)}</div>
-          <div className="muted">Average reduction: {avgReduction}%</div>
+        <div className="stat-card" style={{ background: 'var(--surface)', border: '2px solid var(--accent)' }}>
+          <div className="stat-card-label" style={{ color: 'var(--accent)' }}>Lifetime Space Saved</div>
+          <div className="stat-card-value" style={{ color: 'var(--text)' }}>{fmtBytes(lifetimeSaved)}</div>
+          <div className="muted" style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+            <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)' }}/>
+            Persists across history clears
+          </div>
         </div>
         <div className="stat-card">
-          <div className="stat-card-label">Files Processed</div>
+          <div className="stat-card-label">Files Processed (Current History)</div>
           <div className="stat-card-value">{totalProcessed}</div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
             {Object.entries(formatCounts).map(([fmt, count]) => (

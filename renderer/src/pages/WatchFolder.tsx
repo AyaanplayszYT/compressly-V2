@@ -3,22 +3,24 @@ import { basename, fmtBytes } from '../utils';
 import { useToast } from '../components/Toast';
 
 export default function WatchFolderPage() {
-  const [watchDir, setWatchDir] = useState<string | null>(null);
-  const [outputDir, setOutputDir] = useState<string | null>(null);
-  const [format, setFormat] = useState('webp');
-  const [quality, setQuality] = useState(82);
-  const [isWatching, setIsWatching] = useState(false);
+  const [watchDir,    setWatchDir]    = useState<string | null>(null);
+  const [outputDir,   setOutputDir]   = useState<string | null>(null);
+  const [format,      setFormat]      = useState('webp');
+  const [quality,     setQuality]     = useState(82);
+  const [isWatching,  setIsWatching]  = useState(false);
+  const [debounceMs,  setDebounceMs]  = useState(500);
+  const [pendingCount,setPendingCount]= useState(0);
   const [logs, setLogs] = useState<{ time: string; text: string; type: 'info' | 'success' | 'error' }[]>([]);
   const { showToast } = useToast();
 
   useEffect(() => {
     const handleCompressed = ({ filePath, result }: any) => {
       const text = `Compressed: ${basename(filePath)} → ${fmtBytes(result?.outputSize || 0)}`;
-      setLogs(prev => [{ time: new Date().toLocaleTimeString(), text, type: 'success' }, ...prev].slice(0, 100));
+      setLogs(prev => [{ time: new Date().toLocaleTimeString(), text, type: 'success' as const }, ...prev].slice(0, 100));
     };
     const handleError = ({ filePath, error }: any) => {
       const text = `Error: ${basename(filePath)} — ${error}`;
-      setLogs(prev => [{ time: new Date().toLocaleTimeString(), text, type: 'error' }, ...prev].slice(0, 100));
+      setLogs(prev => [{ time: new Date().toLocaleTimeString(), text, type: 'error' as const }, ...prev].slice(0, 100));
     };
     window.api.on('watch:compressed', handleCompressed);
     window.api.on('watch:error', handleError);
@@ -32,14 +34,23 @@ export default function WatchFolderPage() {
     if (isWatching) {
       await window.api.watchStop();
       setIsWatching(false);
+      setPendingCount(0);
       setLogs(prev => [{ time: new Date().toLocaleTimeString(), text: 'Stopped watching.', type: 'info' }, ...prev]);
       showToast('Folder watching stopped', 'info');
     } else {
       if (!watchDir) return;
-      await window.api.watchStart(watchDir, { format, quality, outputDir: outputDir || null });
+      await window.api.watchStart(watchDir, { format, quality, outputDir: outputDir || null, debounceMs });
       setIsWatching(true);
-      setLogs(prev => [{ time: new Date().toLocaleTimeString(), text: `Watching: ${watchDir}`, type: 'info' }, ...prev]);
+      setLogs(prev => [{ time: new Date().toLocaleTimeString(), text: `Watching: ${watchDir} (debounce: ${debounceMs}ms)`, type: 'info' }, ...prev]);
       showToast('Folder watching started', 'success');
+
+      // Poll pending count
+      const poll = setInterval(async () => {
+        const count = await window.api.watchPendingCount().catch(() => 0);
+        setPendingCount(count || 0);
+      }, 250);
+      // Clear poll when component unmounts or stops
+      return () => clearInterval(poll);
     }
   };
 
@@ -50,7 +61,14 @@ export default function WatchFolderPage() {
           <div className="eyebrow">Automation</div>
           <div className="h1">Folder Watch Mode</div>
         </div>
-        {isWatching && <div className="page-header-right"><span className="badge" style={{ background: 'rgba(92,184,122,0.15)', color: 'var(--green)' }}>● Active</span></div>}
+        {isWatching && (
+          <div className="page-header-right">
+            <span className="badge" style={{ background: 'rgba(92,184,122,0.15)', color: 'var(--green)' }}>● Active</span>
+            {pendingCount > 0 && (
+              <span className="badge" style={{ background: 'rgba(var(--accent-rgb),0.15)', color: 'var(--accent)' }}>⏳ {pendingCount} buffering…</span>
+            )}
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', gap: 24, flex: 1, minHeight: 0 }}>
@@ -67,12 +85,17 @@ export default function WatchFolderPage() {
           <div className="form-group">
             <label className="form-label">Output Format</label>
             <select value={format} onChange={e => setFormat(e.target.value)} disabled={isWatching}>
-              <option value="webp">WebP</option><option value="jpg">JPEG</option><option value="png">PNG</option>
+              <option value="webp">WebP</option><option value="jpg">JPEG</option><option value="png">PNG</option><option value="avif">AVIF</option>
             </select>
           </div>
           <div className="form-group">
             <label className="form-label">Quality: <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{quality}</span></label>
             <input type="range" min="1" max="100" value={quality} onChange={e => setQuality(parseInt(e.target.value))} disabled={isWatching} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Batch Debounce: <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{debounceMs}ms</span></label>
+            <input type="range" min={100} max={5000} step={100} value={debounceMs} onChange={e => setDebounceMs(parseInt(e.target.value))} disabled={isWatching} />
+            <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>Wait this long after the last file before processing the batch</div>
           </div>
           <div className="form-group">
             <label className="form-label">Output Folder</label>

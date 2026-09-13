@@ -38,7 +38,8 @@ export default function CropperPage() {
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    const path = Array.from(e.dataTransfer.files)[0]?.['path'];
+    const file = Array.from(e.dataTransfer.files)[0] as any;
+    const path = file?.path;
     if (path) { setFile(path); setResult(null); setCrop({ x: 0, y: 0, w: 100, h: 100 }); }
   };
 
@@ -180,7 +181,7 @@ export default function CropperPage() {
                 <div style={{ position: 'relative', display: 'inline-block', userSelect: 'none' }}>
                   <img
                     ref={imgRef}
-                    src={`file:///${file.replace(/\\/g, '/')}`}
+                    src={`local:///${file.replace(/\\/g, '/')}`}
                     alt="Crop source"
                     onLoad={handleImgLoad}
                     style={{ maxWidth: '100%', maxHeight: 'calc(100vh - 300px)', display: 'block', border: '2px solid var(--border-color)' }}

@@ -10,7 +10,6 @@ import ExifPage from './pages/Exif';
 import PalettePage from './pages/Palette';
 import MetaCleanPage from './pages/MetaClean';
 import WatchFolderPage from './pages/WatchFolder';
-import StudioPage from './pages/studio/Studio';
 import HistoryPage from './pages/History';
 import StatsPage from './pages/Stats';
 import NamingPage from './pages/Naming';
@@ -20,7 +19,12 @@ import AboutPage from './pages/About';
 import CropperPage from './pages/Cropper';
 import FlipRotatePage from './pages/FlipRotate';
 import BorderPadPage from './pages/BorderPad';
+import ColorGradePage from './pages/ColorGrade';
+import BatchRenamePage from './pages/BatchRename';
+import PdfExtractPage from './pages/PdfExtract';
+import DocConvertPage from './pages/DocConvert';
 import { useKeyboard } from './hooks/useKeyboard';
+import Onboarding from './components/Onboarding';
 
 interface PresetOverride {
   format: string;
@@ -35,35 +39,30 @@ export default function App() {
   const [pageKey, setPageKey] = useState(0);
   const [presetOverride, setPresetOverride] = useState<PresetOverride | null>(null);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Global drag-and-drop: store handler ref for current page
   const dashboardAddFilesRef = useRef<((paths: string[]) => void) | null>(null);
 
   // ── Theme ───────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const savedTheme = localStorage.getItem('compressly-theme') || 'system';
-    applyTheme(savedTheme);
-  }, []);
+    // Check if onboarding is done
+    window.api.settingGet('onboardingDone', false).then(done => {
+      if (!done) setShowOnboarding(true);
+    });
 
-  // Watch system theme changes
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleSystemChange = () => {
-      const saved = localStorage.getItem('compressly-theme') || 'system';
-      if (saved === 'system') applyTheme('system');
-    };
-    mq.addEventListener('change', handleSystemChange);
-    return () => mq.removeEventListener('change', handleSystemChange);
+    // Theme initialization: only 'dark' (default) or 'beta' (vercel)
+    const saved = localStorage.getItem('compressly-theme') || 'dark';
+    const initial = saved === 'beta' ? 'beta' : 'dark';
+    applyTheme(initial);
   }, []);
 
   const applyTheme = (newTheme: string) => {
-    let resolved = newTheme;
-    if (newTheme === 'system') {
-      resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    setTheme(newTheme === 'system' ? resolved : newTheme);
+    const resolved = newTheme === 'beta' ? 'beta' : 'dark';
+    setTheme(resolved);
     document.documentElement.setAttribute('data-theme', resolved);
-    localStorage.setItem('compressly-theme', newTheme);
+    localStorage.setItem('compressly-theme', resolved);
+    window.api.settingSet?.('theme', resolved);
   };
 
   const handleThemeChange = useCallback((newTheme: string) => {
@@ -123,7 +122,6 @@ export default function App() {
       case 'palette':    return <PalettePage />;
       case 'metaclean':  return <MetaCleanPage />;
       case 'watchpage':  return <WatchFolderPage />;
-      case 'studio':     return <StudioPage />;
       case 'history':    return <HistoryPage />;
       case 'stats':      return <StatsPage />;
       case 'naming':     return <NamingPage />;
@@ -133,7 +131,17 @@ export default function App() {
       case 'cropper':    return <CropperPage />;
       case 'fliprotate': return <FlipRotatePage />;
       case 'borderpad':  return <BorderPadPage />;
-      default:           return <DashboardPage presetOverride={null} onPresetConsumed={() => {}} />;
+      case 'colorgrade': return <ColorGradePage />;
+      case 'batchrename':return <BatchRenamePage />;
+      case 'pdfextract': return <PdfExtractPage />;
+      case 'docconvert': return <DocConvertPage />;
+      default:           return (
+        <DashboardPage
+          presetOverride={null}
+          onPresetConsumed={() => {}}
+          onAddFiles={handler => { dashboardAddFilesRef.current = handler; }}
+        />
+      );
     }
   };
 
@@ -193,6 +201,10 @@ export default function App() {
             <div style={{ marginTop: 16, fontSize: 11, color: 'var(--text3)', textAlign: 'center' }}>Press <kbd className="kbd" style={{ fontSize: 10 }}>Esc</kbd> or click outside to close</div>
           </div>
         </div>
+      )}
+
+      {showOnboarding && activeTab === 'dashboard' && (
+        <Onboarding onComplete={() => setShowOnboarding(false)} />
       )}
     </div>
   );

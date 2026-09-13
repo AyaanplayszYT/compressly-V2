@@ -8,7 +8,7 @@ interface SidebarProps {
   theme: string;
 }
 
-/* ── SVG Icon Components (18×18, stroke-based) ─────────────── */
+/* ── SVG Icon Components ────────────────────────────────────── */
 const I = ({ d, ...p }: { d: string } & React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...p}>
     <path d={d} />
@@ -59,11 +59,7 @@ const icons: Record<string, React.ReactNode> = {
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
     </svg>
   ),
-  studio: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 19l7-7 3 3-7 7-3-3z" /><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" /><path d="M2 2l7.586 7.586" /><circle cx="11" cy="11" r="2" />
-    </svg>
-  ),
+
   history: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
@@ -92,11 +88,6 @@ const icons: Record<string, React.ReactNode> = {
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
     </svg>
   ),
-  about: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
-    </svg>
-  ),
   cropper: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
       <path d="M6 2v14a2 2 0 0 0 2 2h14" /><path d="M18 22V8a2 2 0 0 0-2-2H2" />
@@ -113,20 +104,54 @@ const icons: Record<string, React.ReactNode> = {
       <rect x="7" y="7" width="10" height="10" rx="1" fill="currentColor" fillOpacity="0.15" />
     </svg>
   ),
+  colorgrade: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a10 10 0 0 1 0 20" fill="currentColor" fillOpacity="0.15" />
+      <path d="M12 6v6l4 2" />
+    </svg>
+  ),
+  batchrename: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+    </svg>
+  ),
+  pdfextract: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="12" y1="18" x2="12" y2="12" />
+      <polyline points="9 15 12 18 15 15" />
+    </svg>
+  ),
+  docconvert: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <path d="M9 13h6" />
+      <path d="M9 17h4" />
+      <path d="M19 22l3-3-3-3" />
+      <path d="M22 19H15" />
+    </svg>
+  ),
 };
 
 const navGroups = [
   {
     label: 'Tools',
     items: [
-      { id: 'dashboard',  label: 'Compress' },
-      { id: 'converter',  label: 'Convert' },
-      { id: 'resizer',    label: 'Resize' },
-      { id: 'cropper',    label: 'Crop' },
-      { id: 'fliprotate', label: 'Flip & Rotate' },
-      { id: 'borderpad',  label: 'Border & Pad' },
-      { id: 'watermark',  label: 'Watermark' },
-      { id: 'removebg',   label: 'Remove BG' },
+      { id: 'dashboard',   label: 'Compress' },
+      { id: 'converter',   label: 'Convert' },
+      { id: 'resizer',     label: 'Resize' },
+      { id: 'cropper',     label: 'Crop' },
+      { id: 'fliprotate',  label: 'Flip & Rotate' },
+      { id: 'borderpad',   label: 'Border & Pad' },
+      { id: 'colorgrade',  label: 'Color Grade' },
+      { id: 'watermark',   label: 'Watermark' },
+      { id: 'removebg',    label: 'Remove BG' },
+      { id: 'batchrename', label: 'Batch Rename' },
+      { id: 'pdfextract',  label: 'PDF → Images' },
+      { id: 'docconvert',  label: 'Doc Convert' },
     ],
   },
   {
@@ -137,12 +162,7 @@ const navGroups = [
       { id: 'metaclean', label: 'Clean Meta' },
     ],
   },
-  {
-    label: 'Create',
-    items: [
-      { id: 'studio', label: 'Studio' },
-    ],
-  },
+
   {
     label: 'Automate',
     items: [
@@ -167,8 +187,55 @@ const navGroups = [
 ];
 
 export default function Sidebar({ expanded, onToggle, currentPage, onNavigate, theme }: SidebarProps) {
+  const [groups, setGroups] = React.useState(navGroups);
+  const [draggedItem, setDraggedItem] = React.useState<{ groupId: string, itemId: string } | null>(null);
+
+  React.useEffect(() => {
+    window.api.settingGet('sidebarOrder', null).then(saved => {
+      if (saved) setGroups(saved);
+    });
+  }, []);
+
+  const handleDragStart = (groupId: string, itemId: string, e: React.DragEvent) => {
+    setDraggedItem({ groupId, itemId });
+    e.dataTransfer.effectAllowed = 'move';
+    if (e.target instanceof HTMLElement) {
+      e.target.style.opacity = '0.5';
+    }
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    setDraggedItem(null);
+    if (e.target instanceof HTMLElement) {
+      e.target.style.opacity = '1';
+    }
+  };
+
+  const handleDrop = (targetGroupId: string, targetItemId: string) => {
+    if (!draggedItem) return;
+    const { groupId: srcGroup, itemId: srcItem } = draggedItem;
+    if (srcGroup === targetGroupId && srcItem === targetItemId) return;
+
+    setGroups(prev => {
+      const next = JSON.parse(JSON.stringify(prev)) as typeof navGroups;
+      // find source
+      const sGroupIdx = next.findIndex(g => g.label === srcGroup);
+      const sItemIdx = next[sGroupIdx].items.findIndex(i => i.id === srcItem);
+      const [item] = next[sGroupIdx].items.splice(sItemIdx, 1);
+      
+      // find target
+      const tGroupIdx = next.findIndex(g => g.label === targetGroupId);
+      const tItemIdx = next[tGroupIdx].items.findIndex(i => i.id === targetItemId);
+      
+      next[tGroupIdx].items.splice(tItemIdx, 0, item);
+      window.api.settingSet('sidebarOrder', next);
+      return next;
+    });
+  };
+
   return (
     <nav id="sidebar" className={expanded ? 'expanded' : ''}>
+      {/* Logo / Branding */}
       <div id="sidebar-logo">
         <img
           id="logo-icon"
@@ -189,8 +256,9 @@ export default function Sidebar({ expanded, onToggle, currentPage, onNavigate, t
         />
       </div>
 
+      {/* Nav items — scrollable */}
       <div id="nav-items">
-        {navGroups.map((group, gi) => (
+        {groups.map((group, gi) => (
           <div key={group.label} className="nav-section">
             <div className="nav-section-label">{group.label}</div>
             {group.items.map(item => (
@@ -199,34 +267,38 @@ export default function Sidebar({ expanded, onToggle, currentPage, onNavigate, t
                 className={`nav-item ${currentPage === item.id ? 'active' : ''}`}
                 onClick={() => onNavigate(item.id)}
                 title={item.label}
+                draggable
+                onDragStart={e => handleDragStart(group.label, item.id, e)}
+                onDragEnd={handleDragEnd}
+                onDragOver={e => e.preventDefault()}
+                onDrop={() => handleDrop(group.label, item.id)}
               >
                 <span className="nav-icon">{icons[item.id]}</span>
                 <span className="nav-label">{item.label}</span>
               </div>
             ))}
-            {gi < navGroups.length - 1 && <div className="nav-divider" />}
+            {gi < groups.length - 1 && <div className="nav-divider" />}
           </div>
         ))}
       </div>
 
-      <div id="sidebar-footer">
-        <span id="sidebar-credit">Made by Mistix</span>
-        <button id="sidebar-collapse" onClick={onToggle} title={expanded ? 'Collapse' : 'Expand'}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </button>
-      </div>
-
-      {/* About at very bottom */}
-      <div style={{ padding: '4px 10px 0' }}>
+      {/* Rebuilt About section at bottom of the nav */}
+      <div id="sidebar-about">
         <div
           className={`nav-item ${currentPage === 'about' ? 'active' : ''}`}
           onClick={() => onNavigate('about')}
-          title="About"
+          title="About Compressly"
         >
-          <span className="nav-icon">{icons.about}</span>
+          <span className="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+          </span>
           <span className="nav-label">About</span>
+        </div>
+        {/* Version strip — only visible when expanded */}
+        <div id="sidebar-brand-strip">
+          <span id="sidebar-version-tag">v2.0</span>
         </div>
       </div>
     </nav>
